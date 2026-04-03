@@ -39,6 +39,12 @@ const userSchema = new Schema<IUSer>({
         type: Boolean,
         default: false
     },
+    accessToken: {
+        type: String,
+    },
+    refreshToken: {
+        type: String,
+    },
     // plan: {
     //     type: {
     //         type: String,

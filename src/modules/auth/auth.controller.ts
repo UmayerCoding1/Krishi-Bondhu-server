@@ -13,10 +13,17 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
 
 const verifyUser = asyncHandler(async (req: Request, res: Response) => {
-    const result = await authService.verifyUserService(req);
-    if (result) {
-        return res.status(201).json(new ApiResponse(201, "User verified successfully"));
-    }
+    const { user, accessToken } = await authService.verifyUserService(req);
+
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, "User verified successfully", user)
+    );
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {

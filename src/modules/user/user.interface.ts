@@ -8,6 +8,7 @@ export enum PLANTYPE {
 }
 
 export interface IUSer {
+    _id?: Types.ObjectId;
     name: string;
     email: string;
     password: string;
@@ -25,5 +26,9 @@ export interface IUSer {
     //     token: number;
     //     planId: Types.ObjectId;
     // }
+    accessToken?: string;
+    refreshToken?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 
 }

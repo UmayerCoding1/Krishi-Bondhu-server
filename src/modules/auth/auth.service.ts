@@ -1,8 +1,10 @@
-import { Request } from "express";
+import { Request, Response } from "express";
 import { User } from "../user/user.model";
 import { ApiError } from "../../utils/ApiError";
 import { sendEmail } from "../../services/sendEmail";
 import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
+import { generateAccessToken, generateRefreshToken } from "../../utils/token";
+import { ApiResponse } from "../../utils/ApiResponse";
 
 
 const registerService = async (req: Request) => {
@@ -56,12 +58,19 @@ const verifyUserService = async (req: Request) => {
         case user?.otp?.expiresAt < new Date():
             throw new ApiError(400, "OTP expired");
 
+
         case verifyOTP:
+            const accessToken = await generateAccessToken({ _id: user._id });
+            const refreshToken = await generateRefreshToken({ _id: user._id });
             user.isVerified = true;
             user.otp = "";
             user.otpExpires = undefined;
+            user.accessToken = String(accessToken);
+            user.refreshToken = String(refreshToken);
             await user.save();
-            return user;
+
+            return { user, accessToken };
+
 
         default:
             throw new ApiError(404, "User not found");
