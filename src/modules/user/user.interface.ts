@@ -11,17 +11,16 @@ export interface IUSer {
     name: string;
     email: string;
     password: string;
-    attempt: number;
-    otp: string;
-    otpExpires: Date;
+    attempt?: number;
+    otp?: string;
+    otpExpires?: Date;
     isVerified: boolean;
-    plan: {
-        type: PLANTYPE;
-        price: number;
-        startDate: Date;
-        endDate: Date;
-        token: number;
-        planId: Types.ObjectId;
-    }
+    // plan?: {
+    //     type: PLANTYPE;
+    //     startDate: Date;
+    //     endDate: Date;
+    //     token: number;
+    //     planId: Types.ObjectId;
+    // }
 
 }
