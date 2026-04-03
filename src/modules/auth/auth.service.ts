@@ -2,7 +2,7 @@ import { Request } from "express";
 import { User } from "../user/user.model";
 import { ApiError } from "../../utils/ApiError";
 import { sendEmail } from "../../services/sendEmail";
-import { createHashPassword } from "../../utils/crypto-hash";
+import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
 
 
 const registerService = async (req: Request) => {
@@ -38,22 +38,25 @@ const registerService = async (req: Request) => {
 
 const verifyUserService = async (req: Request) => {
     const { email, otp } = req.body;
-
     const user = await User.findOne({ email });
+
+
+    if (user?.isVerified) {
+        throw new ApiError(400, "User already verified");
+    }
+
+    const verifyOTP = verifyHashPassword(String(otp), user?.otp?.slug, user?.otp?.code);
 
 
 
     switch (true) {
-        case !!user && user.attempt === 0:
-            throw new ApiError(400, "You have exceeded the maximum attempts");
-
-        case !!user && !user.isVerified:
-            throw new ApiError(400, "User is not verified");
-
-        case !!user && user.otp !== otp:
+        case !verifyOTP:
             throw new ApiError(400, "Invalid OTP");
 
-        case !!user && user.otp === otp:
+        case user?.otp?.expiresAt < new Date():
+            throw new ApiError(400, "OTP expired");
+
+        case verifyOTP:
             user.isVerified = true;
             user.otp = "";
             user.otpExpires = undefined;

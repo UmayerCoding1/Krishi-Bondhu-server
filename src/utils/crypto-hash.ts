@@ -8,6 +8,7 @@ function createHashPassword(password: string) {
 
 function verifyHashPassword(password: string, slug: string, hash: string) {
     const hashVerify = crypto.pbkdf2Sync(password, slug, 100000, 64, 'sha256');
+    console.log(hashVerify.toString('hex'), hash);
     return hashVerify.toString('hex') === hash;
 };
 

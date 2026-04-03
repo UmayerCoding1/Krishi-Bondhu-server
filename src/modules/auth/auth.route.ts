@@ -8,6 +8,7 @@ import { authLimiter } from "../../middlewares/rateLimit.middleware";
 const authRoute = Router();
 
 authRoute.post("/register", validateRequest(authValidation.registerSchema), authController.register);
+authRoute.post("/verify", validateRequest(authValidation.verifySchema), authController.verifyUser);
 
 
 export default authRoute;
