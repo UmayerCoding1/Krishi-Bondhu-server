@@ -1,36 +1,44 @@
 import mongoose, { Schema, model, models } from "mongoose";
 import { IUSer, PLANTYPE } from "./user.interface";
+import { createHashPassword } from "../../utils/crypto-hash";
 
 const userSchema = new Schema<IUSer>({
     name: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     password: {
         type: String,
         required: true
     },
-    otp: {
+    slug: {
         type: String,
-        required: false
+        unique: true
     },
-    otpExpires: {
-        type: Date,
-        required: false
+    otp: {
+        code: {
+            type: String,
+            max: 4,
+            min: 4
+        },
+        expiresAt: {
+            type: Date,
+        },
+        slug: {
+            type: String,
+        }
     },
     isVerified: {
         type: Boolean,
         default: false
     },
-    attempt: {
-        type: Number,
-        default: 2
-    }
     // plan: {
     //     type: {
     //         type: String,
@@ -54,5 +62,14 @@ const userSchema = new Schema<IUSer>({
     //     }
     // }
 }, { timestamps: true });
+
+
+userSchema.pre("save", async function (next) {
+    if (this.isModified("password")) {
+        const { slug, hash } = createHashPassword(this.password);
+        this.password = hash;
+        this.slug = slug;
+    }
+});
 
 export const User = models.User || model<IUSer>("User", userSchema);

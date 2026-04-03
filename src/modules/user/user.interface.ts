@@ -11,9 +11,12 @@ export interface IUSer {
     name: string;
     email: string;
     password: string;
-    attempt?: number;
-    otp?: string;
-    otpExpires?: Date;
+    slug?: string;
+    otp?: {
+        code: string;
+        expiresAt: Date;
+        slug: string;
+    };
     isVerified: boolean;
     // plan?: {
     //     type: PLANTYPE;
