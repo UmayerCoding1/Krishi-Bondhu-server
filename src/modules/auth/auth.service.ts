@@ -80,11 +80,46 @@ const verifyUserService = async (req: Request) => {
 
 const loginService = async (req: Request) => {
     const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    const verifyPassword = verifyHashPassword(password, user.slug, user.password);
+    if (!verifyPassword) {
+        throw new ApiError(400, "Invalid password");
+    }
+    const accessToken = await generateAccessToken({ _id: user._id });
+    const refreshToken = await generateRefreshToken({ _id: user._id });
+    user.accessToken = String(accessToken);
+    user.refreshToken = String(refreshToken);
+    await user.save();
+    return { user, accessToken };
+}
 
+const logoutService = async (req: Request) => {
+    console.log(req._id);
+    const user = await User.findById(req._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    user.accessToken = "";
+    user.refreshToken = "";
+    await user.save();
+    return { user };
+}
+
+const getCurrentUserService = async (req: Request) => {
+    const user = await User.findById(req._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    return user;
 }
 
 export const authService = {
     registerService,
     loginService,
-    verifyUserService
+    verifyUserService,
+    logoutService,
+    getCurrentUserService
 }

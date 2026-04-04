@@ -4,11 +4,13 @@ import express, { Request, Response } from "express";
 import { globalErrorHandle } from "./middlewares/error.middleware";
 import authRoute from "./modules/auth/auth.route";
 import { connectDB } from "./config/db";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const PORT = 8000;
 
 app.use(express.json());
+app.use(cookieParser());
 
 connectDB();
 
@@ -17,7 +19,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 
-app.use('/api/v1', authRoute);
+app.use('/api/v1/auth', authRoute);
 
 
 

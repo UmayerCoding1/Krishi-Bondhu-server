@@ -1,7 +1,9 @@
 
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
-
+interface IJwtPayload extends JwtPayload {
+    _id: string;
+}
 
 export const generateToken = async (payload: any) => {
     return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
@@ -17,5 +19,5 @@ export const generateRefreshToken = async (payload: any) => {
 };
 
 export const verifyToken = async (token: string) => {
-    return jwt.verify(token, process.env.JWT_SECRET!);
+    return jwt.verify(token, process.env.JWT_SECRET!) as IJwtPayload;
 };

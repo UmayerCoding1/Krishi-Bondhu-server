@@ -17,8 +17,8 @@ const verifyUser = asyncHandler(async (req: Request, res: Response) => {
 
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
     });
 
     return res.status(200).json(
@@ -27,16 +27,32 @@ const verifyUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {
-    const result = await authService.loginService(req);
-    // if (!result.success) {
-    //     console.log(result)
-    //     return res.status(result.statusCode).json(new ApiResponse(result.statusCode, result.message || "Something went wrong"));
-    // }
-    // return res.status(201).json(new ApiResponse(201, result, "User logged in successfully"));
+    const { user, accessToken } = await authService.loginService(req);
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
+    return res.status(200).json(new ApiResponse(200, "User logged in successfully", user));
+});
+
+
+const logout = asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.logoutService(req);
+    res.clearCookie('accessToken');
+    return res.status(200).json(new ApiResponse(200, "User logged out successfully"));
+});
+
+
+const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.getCurrentUserService(req);
+    return res.status(200).json(new ApiResponse(200, "User fetched successfully", user));
 });
 
 export const authController = {
     register,
     login,
-    verifyUser
+    verifyUser,
+    logout,
+    getCurrentUser
 }
