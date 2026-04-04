@@ -75,6 +75,6 @@ export const sendEmail = async (
     `,
   });
 
-  console.log("Email sent successfully");
+
   return { success: true };
 };

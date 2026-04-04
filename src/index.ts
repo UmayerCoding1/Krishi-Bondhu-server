@@ -5,12 +5,18 @@ import { globalErrorHandle } from "./middlewares/error.middleware";
 import authRoute from "./modules/auth/auth.route";
 import { connectDB } from "./config/db";
 import cookieParser from "cookie-parser";
-
+import cors from 'cors';
 const app = express();
 const PORT = 8000;
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors(
+    {
+        origin: "http://localhost:3000",
+        credentials: true,
+    }
+));
 
 connectDB();
 

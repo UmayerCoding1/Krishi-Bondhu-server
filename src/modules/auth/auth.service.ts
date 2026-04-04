@@ -69,7 +69,7 @@ const verifyUserService = async (req: Request) => {
             user.refreshToken = String(refreshToken);
             await user.save();
 
-            return { user, accessToken };
+            return { user, accessToken, refreshToken };
 
 
         default:
@@ -84,6 +84,7 @@ const loginService = async (req: Request) => {
     if (!user) {
         throw new ApiError(404, "User not found");
     }
+
     const verifyPassword = verifyHashPassword(password, user.slug, user.password);
     if (!verifyPassword) {
         throw new ApiError(400, "Invalid password");
@@ -93,12 +94,20 @@ const loginService = async (req: Request) => {
     user.accessToken = String(accessToken);
     user.refreshToken = String(refreshToken);
     await user.save();
-    return { user, accessToken };
+
+    const userWithoutPassword = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+    }
+    return { userWithoutPassword, accessToken, refreshToken };
 }
 
 const logoutService = async (req: Request) => {
-    console.log(req._id);
-    const user = await User.findById(req._id);
+    const user = await User.findById(req._id)
     if (!user) {
         throw new ApiError(404, "User not found");
     }
@@ -109,7 +118,8 @@ const logoutService = async (req: Request) => {
 }
 
 const getCurrentUserService = async (req: Request) => {
-    const user = await User.findById(req._id);
+    const user = await User.findById(req._id).select('-password -refreshToken -accessToken -otp -slug ');
+
     if (!user) {
         throw new ApiError(404, "User not found");
     }

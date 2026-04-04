@@ -1,23 +1,53 @@
-import jwt from "jsonwebtoken";
-import { ApiError } from "../utils/ApiError";
 import { NextFunction, Request, Response } from "express";
-import { verifyToken } from "../utils/token";
+import { ApiError } from "../utils/ApiError";
+import { verifyToken, generateAccessToken } from "../utils/token";
+import { User } from "../modules/user/user.model";
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+
+export const authMiddleware = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     try {
-        const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+        const accessToken =
+            req.cookies?.accessToken ||
+            req.headers.authorization?.split(" ")[1];
 
-        if (!token) {
-            throw new ApiError(401, "Unauthorized");
+        try {
+            const decoded = await verifyToken(accessToken);
+            req._id = decoded._id;
+            return next();
+        } catch (err) {
+            const refreshToken = req.cookies?.refreshToken;
+            if (!refreshToken) {
+                throw new ApiError(401, "Session expired");
+            }
+
+            const decodedRefresh = await verifyToken(refreshToken);
+
+
+            const user = await User.findById(decodedRefresh._id);
+
+
+            if (!user || user.refreshToken !== refreshToken) {
+                throw new ApiError(401, "Invalid session");
+            }
+            const newAccessToken = await generateAccessToken({
+                _id: user._id,
+            });
+
+            res.cookie("accessToken", newAccessToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "strict",
+                maxAge: 15 * 60 * 1000,
+            });
+
+            req._id = user._id;
+            return next();
         }
-        const decoded = await verifyToken(token);
-        console.log('decode data', decoded._id);
-
-        // 🔥 HERE you set req._id
-        req._id = decoded._id;
-
-        next();
     } catch (error) {
-        throw new ApiError(401, "Invalid token");
+        next(error);
     }
 };

@@ -13,9 +13,14 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
 
 const verifyUser = asyncHandler(async (req: Request, res: Response) => {
-    const { user, accessToken } = await authService.verifyUserService(req);
+    const { user, accessToken, refreshToken } = await authService.verifyUserService(req);
 
     res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
+    res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -27,19 +32,25 @@ const verifyUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {
-    const { user, accessToken } = await authService.loginService(req);
+    const { userWithoutPassword, accessToken, refreshToken } = await authService.loginService(req);
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
     });
-    return res.status(200).json(new ApiResponse(200, "User logged in successfully", user));
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
+    return res.status(200).json(new ApiResponse(200, "User logged in successfully", userWithoutPassword));
 });
 
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.logoutService(req);
     res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
     return res.status(200).json(new ApiResponse(200, "User logged out successfully"));
 });
 
