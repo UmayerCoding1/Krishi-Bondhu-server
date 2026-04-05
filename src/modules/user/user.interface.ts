@@ -13,6 +13,7 @@ export interface IUSer {
     email: string;
     password: string;
     slug?: string;
+    avatar?: string;
     otp?: {
         code: string;
         expiresAt: Date;

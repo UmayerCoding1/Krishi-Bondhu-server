@@ -22,6 +22,9 @@ const userSchema = new Schema<IUSer>({
         type: String,
         unique: true
     },
+    avatar: {
+        type: String,
+    },
     otp: {
         code: {
             type: String,

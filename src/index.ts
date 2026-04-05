@@ -6,6 +6,7 @@ import authRoute from "./modules/auth/auth.route";
 import { connectDB } from "./config/db";
 import cookieParser from "cookie-parser";
 import cors from 'cors';
+import cropRouter from "./modules/crop/crop.route";
 const app = express();
 const PORT = 8000;
 
@@ -26,6 +27,7 @@ app.get("/", (req: Request, res: Response) => {
 
 
 app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/crop', cropRouter);
 
 
 
