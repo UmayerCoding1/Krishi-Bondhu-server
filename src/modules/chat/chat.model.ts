@@ -9,6 +9,14 @@ const chatSchema = new Schema<IChat>({
         required: true,
         ref: 'User'
     },
+    chatId: {
+        type: String,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true
+    },
     messages: [
         {
             role: {

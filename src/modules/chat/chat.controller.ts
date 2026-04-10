@@ -5,12 +5,12 @@ import { askAI, streamAI } from "./chat.service";
 
 export const ChatController = {
     sendMessage: asyncHandler(async (req: Request, res: Response) => {
-        const { message, userId } = req.body;
+        const { message, userId, chatId } = req.body;
         if (!message || !userId) {
             throw new ApiError(400, "Message and userId are required");
         }
 
-        const result = await askAI(userId, message);
+        const result = await askAI(userId, message, chatId);
         res.json({
             success: true,
             reply: result.reply,
@@ -19,12 +19,12 @@ export const ChatController = {
     }),
 
     streamAI: asyncHandler(async (req: Request, res: Response) => {
-        const { message, userId } = req.body;
+        const { message, userId, chatId } = req.body;
         if (!message || !userId) {
             throw new ApiError(400, "Message and userId are required");
         }
 
-        const result = await streamAI(userId, message, res);
+        const result = await streamAI(userId, message, chatId, res);
         res.json({
             success: true,
             // reply: result.reply,

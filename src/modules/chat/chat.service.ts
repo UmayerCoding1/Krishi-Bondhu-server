@@ -10,16 +10,19 @@ const systemPrompt = `
 You are a Bangladeshi agriculture expert.
 
 - Answer in Bangla
-- Give practical farming advice
-- Keep answers simple
+- Provide practical farming advice
+- Keep answers simple and concise
+- If the user asks about crops, soil, fertilizers, pesticides, irrigation, weather, market, government policy, etc., then answer the question
+- If the user asks anything outside of agriculture, then respond with:
+"আমি শুধুমাত্র কৃষি সম্পর্কিত প্রশ্নের জন্য প্রশিক্ষিত।"
 `;
 
-export const getChatHistory = async (userId: string) => {
+export const getChatHistory = async (userId: string, chatId: string, title: string) => {
     try {
-        let chat = await Chat.findOne({ userId });
+        let chat = await Chat.findOne({ userId, chatId });
 
         if (!chat) {
-            chat = await Chat.create({ userId, messages: [] });
+            chat = await Chat.create({ userId, chatId, title, messages: [] });
         }
 
         return chat.messages;
@@ -30,18 +33,19 @@ export const getChatHistory = async (userId: string) => {
 
 export const saveMessage = async (
     userId: string,
+    chatId: string,
     role: string,
     content: string
 ) => {
     await Chat.updateOne(
-        { userId },
+        { userId, chatId },
         { $push: { messages: { role, content } } }
     );
 };
 
-export const askAI = async (userId: string, message: string) => {
+export const askAI = async (userId: string, message: string, chatId: string) => {
     const MODELS = getSmartModels(message);
-    const history = await getChatHistory(userId);
+    const history = await getChatHistory(userId, chatId, message);
 
     for (const model of MODELS) {
         try {
@@ -59,8 +63,8 @@ export const askAI = async (userId: string, message: string) => {
             const reply = completion.choices?.[0]?.message?.content;
 
             if (reply) {
-                await saveMessage(userId, "user", message);
-                await saveMessage(userId, "assistant", reply);
+                await saveMessage(userId, chatId, "user", message);
+                await saveMessage(userId, chatId, "assistant", reply);
 
                 return { reply, modelUsed: model };
             }
@@ -77,10 +81,11 @@ export const askAI = async (userId: string, message: string) => {
 export const streamAI = async (
     userId: string,
     message: string,
+    chatId: string,
     res: any
 ) => {
     const MODELS = getSmartModels(message);
-    const history = await getChatHistory(userId);
+    const history = await getChatHistory(userId, chatId, message);
 
     for (const model of MODELS) {
         try {
@@ -113,8 +118,8 @@ export const streamAI = async (
                 }
             }
 
-            await saveMessage(userId, "user", message);
-            await saveMessage(userId, "assistant", fullReply);
+            await saveMessage(userId, chatId, "user", message);
+            await saveMessage(userId, chatId, "assistant", fullReply);
 
             res.end();
             return;
