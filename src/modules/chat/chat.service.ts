@@ -17,7 +17,60 @@ You are a Bangladeshi agriculture expert.
 "আমি শুধুমাত্র কৃষি সম্পর্কিত প্রশ্নের জন্য প্রশিক্ষিত।"
 `;
 
-export const getChatHistory = async (userId: string, chatId: string, title: string) => {
+export const getAllChats = async (userId: string) => {
+    try {
+        const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt");
+        if (!chats || chats.length === 0) {
+            return {
+                success: false,
+                message: "No chats found",
+                chats: []
+            };
+        }
+        return {
+            success: true,
+            message: "Chats fetched successfully",
+            chats
+        };
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+export const getSingleChatHistory = async (userId: string, chatId: string | string[]) => {
+    const chat = await Chat.findOne({ userId, chatId });
+    if (!chat) {
+        return {
+            success: false,
+            message: "Chat not found",
+            chat: null
+        };
+    }
+    return {
+        success: true,
+        message: "Chat fetched successfully",
+        chat
+    };
+}
+
+export const deleteChat = async (userId: string, chatId: string | string[]) => {
+    const chat = await Chat.deleteOne({ userId, chatId });
+    if (!chat) {
+        return {
+            success: false,
+            message: "Chat not found",
+            chat: null
+        };
+    }
+    return {
+        success: true,
+        message: "Chat deleted successfully",
+    };
+}
+
+
+// this ai AI hepler function
+export const getAChatHistory = async (userId: string, chatId: string, title?: string) => {
     try {
         let chat = await Chat.findOne({ userId, chatId });
 
@@ -45,7 +98,7 @@ export const saveMessage = async (
 
 export const askAI = async (userId: string, message: string, chatId: string) => {
     const MODELS = getSmartModels(message);
-    const history = await getChatHistory(userId, chatId, message);
+    const history = await getAChatHistory(userId, chatId, message);
 
     for (const model of MODELS) {
         try {
@@ -85,7 +138,7 @@ export const streamAI = async (
     res: any
 ) => {
     const MODELS = getSmartModels(message);
-    const history = await getChatHistory(userId, chatId, message);
+    const history = await getAChatHistory(userId, chatId, message);
 
     for (const model of MODELS) {
         try {
@@ -131,4 +184,6 @@ export const streamAI = async (
 
     res.end("সব মডেল কাজ করছে না 😢");
 };
+
+
 
