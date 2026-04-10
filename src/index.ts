@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import cors from 'cors';
 import cropRouter from "./modules/crop/crop.route";
 import chatRoute from "./modules/chat/chat.route";
+import diseaseDetectionRouter from "./modules/disease/disease.route";
 const app = express();
 const PORT = 8000;
 
@@ -30,6 +31,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/crop', cropRouter);
 app.use('/api/v1/chat', chatRoute);
+app.use('/api/v1/disease', diseaseDetectionRouter);
 
 
 
