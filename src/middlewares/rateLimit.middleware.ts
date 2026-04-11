@@ -17,3 +17,12 @@ export const authLimiter = rateLimit({
         message: "Too many requests, try again later",
     },
 });
+
+export const diseaseLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 min
+    max: 2, // max 2 request per IP
+    message: {
+        success: false,
+        message: "Too many requests, try again later",
+    },
+});
