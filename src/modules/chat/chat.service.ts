@@ -9,7 +9,7 @@ const openRouter = new OpenRouter({
 const systemPrompt = `
 You are a Bangladeshi agriculture expert.
 
-- Answer in Bangla
+- Answer in Banglaz
 - Provide practical farming advice
 - Keep answers simple and concise
 - If the user asks about crops, soil, fertilizers, pesticides, irrigation, weather, market, government policy, etc., then answer the question
@@ -130,7 +130,7 @@ export const askAI = async (userId: string, message: string, chatId: string) => 
     throw new Error("All models failed");
 };
 
-// 🌊 Streaming Response
+// Streaming Response
 export const streamAI = async (
     userId: string,
     message: string,
