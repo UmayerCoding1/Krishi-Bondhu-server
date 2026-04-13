@@ -10,7 +10,7 @@ import cropRouter from "./modules/crop/crop.route";
 import chatRoute from "./modules/chat/chat.route";
 import diseaseDetectionRouter from "./modules/disease/disease.route";
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
 app.use(cookieParser());
