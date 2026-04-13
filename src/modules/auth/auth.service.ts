@@ -40,6 +40,7 @@ const registerService = async (req: Request) => {
 
 const verifyUserService = async (req: Request) => {
     const { email, otp } = req.body;
+
     const user = await User.findOne({ email });
 
 
@@ -60,8 +61,8 @@ const verifyUserService = async (req: Request) => {
 
 
         case verifyOTP:
-            const accessToken = await generateAccessToken({ _id: user._id });
-            const refreshToken = await generateRefreshToken({ _id: user._id });
+            const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
+            const refreshToken = await generateRefreshToken({ _id: user._id, role: user.role });
             user.isVerified = true;
             user.otp = "";
             user.otpExpires = undefined;
@@ -89,8 +90,8 @@ const loginService = async (req: Request) => {
     if (!verifyPassword) {
         throw new ApiError(400, "Invalid password");
     }
-    const accessToken = await generateAccessToken({ _id: user._id });
-    const refreshToken = await generateRefreshToken({ _id: user._id });
+    const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
+    const refreshToken = await generateRefreshToken({ _id: user._id, role: user.role });
     user.accessToken = String(accessToken);
     user.refreshToken = String(refreshToken);
     await user.save();

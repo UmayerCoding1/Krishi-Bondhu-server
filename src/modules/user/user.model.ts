@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, models } from "mongoose";
-import { IUSer, PLANTYPE } from "./user.interface";
+import { IUSer, PLANTYPE, ROLE } from "./user.interface";
 import { createHashPassword } from "../../utils/crypto-hash";
 
 const userSchema = new Schema<IUSer>({
@@ -24,6 +24,11 @@ const userSchema = new Schema<IUSer>({
     },
     avatar: {
         type: String,
+    },
+    role: {
+        type: String,
+        enum: ROLE,
+        default: ROLE.USER
     },
     otp: {
         code: {

@@ -5,16 +5,16 @@ interface IJwtPayload extends JwtPayload {
     _id: string;
 }
 
-export const generateToken = async (payload: { _id: string }) => {
+export const generateToken = async (payload: { _id: string, role: string }) => {
     return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
 };
 
-export const generateAccessToken = async (payload: { _id: string }) => {
+export const generateAccessToken = async (payload: { _id: string, role: string }) => {
     return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
 };
 
 
-export const generateRefreshToken = async (payload: { _id: string }) => {
+export const generateRefreshToken = async (payload: { _id: string, role: string }) => {
     return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
 };
 

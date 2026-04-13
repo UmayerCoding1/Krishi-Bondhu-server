@@ -7,6 +7,11 @@ export enum PLANTYPE {
 
 }
 
+export enum ROLE {
+    USER = "user",
+    ADMIN = "admin",
+}
+
 export interface IUSer {
     _id?: Types.ObjectId;
     name: string;
@@ -14,6 +19,7 @@ export interface IUSer {
     password: string;
     slug?: string;
     avatar?: string;
+    role?: ROLE;
     otp?: {
         code: string;
         expiresAt: Date;
