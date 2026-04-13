@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.streamAI = exports.askAI = exports.saveMessage = exports.getChatHistory = void 0;
+exports.streamAI = exports.askAI = exports.saveMessage = exports.getAChatHistory = exports.deleteChat = exports.getSingleChatHistory = exports.getAllChats = void 0;
 const sdk_1 = require("@openrouter/sdk");
 const smartModel_1 = require("../../utils/smartModel");
 const chat_model_1 = require("./chat.model");
@@ -10,15 +10,71 @@ const openRouter = new sdk_1.OpenRouter({
 const systemPrompt = `
 You are a Bangladeshi agriculture expert.
 
-- Answer in Bangla
-- Give practical farming advice
-- Keep answers simple
+- Answer in Banglaz
+- Provide practical farming advice
+- Keep answers simple and concise
+- If the user asks about crops, soil, fertilizers, pesticides, irrigation, weather, market, government policy, etc., then answer the question
+- If the user asks anything outside of agriculture, then respond with:
+"আমি শুধুমাত্র কৃষি সম্পর্কিত প্রশ্নের জন্য প্রশিক্ষিত।"
 `;
-const getChatHistory = async (userId) => {
+const getAllChats = async (userId) => {
     try {
-        let chat = await chat_model_1.Chat.findOne({ userId });
+        const chats = await chat_model_1.Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt");
+        if (!chats || chats.length === 0) {
+            return {
+                success: false,
+                message: "No chats found",
+                chats: []
+            };
+        }
+        return {
+            success: true,
+            message: "Chats fetched successfully",
+            chats
+        };
+    }
+    catch (error) {
+        console.log(error);
+    }
+};
+exports.getAllChats = getAllChats;
+const getSingleChatHistory = async (userId, chatId) => {
+    const chat = await chat_model_1.Chat.findOne({ userId, chatId });
+    if (!chat) {
+        return {
+            success: false,
+            message: "Chat not found",
+            chat: null
+        };
+    }
+    return {
+        success: true,
+        message: "Chat fetched successfully",
+        chat
+    };
+};
+exports.getSingleChatHistory = getSingleChatHistory;
+const deleteChat = async (userId, chatId) => {
+    const chat = await chat_model_1.Chat.deleteOne({ userId, chatId });
+    if (!chat) {
+        return {
+            success: false,
+            message: "Chat not found",
+            chat: null
+        };
+    }
+    return {
+        success: true,
+        message: "Chat deleted successfully",
+    };
+};
+exports.deleteChat = deleteChat;
+// this ai AI hepler function
+const getAChatHistory = async (userId, chatId, title) => {
+    try {
+        let chat = await chat_model_1.Chat.findOne({ userId, chatId });
         if (!chat) {
-            chat = await chat_model_1.Chat.create({ userId, messages: [] });
+            chat = await chat_model_1.Chat.create({ userId, chatId, title, messages: [] });
         }
         return chat.messages;
     }
@@ -26,14 +82,14 @@ const getChatHistory = async (userId) => {
         console.log(error);
     }
 };
-exports.getChatHistory = getChatHistory;
-const saveMessage = async (userId, role, content) => {
-    await chat_model_1.Chat.updateOne({ userId }, { $push: { messages: { role, content } } });
+exports.getAChatHistory = getAChatHistory;
+const saveMessage = async (userId, chatId, role, content) => {
+    await chat_model_1.Chat.updateOne({ userId, chatId }, { $push: { messages: { role, content } } });
 };
 exports.saveMessage = saveMessage;
-const askAI = async (userId, message) => {
+const askAI = async (userId, message, chatId) => {
     const MODELS = (0, smartModel_1.getSmartModels)(message);
-    const history = await (0, exports.getChatHistory)(userId);
+    const history = await (0, exports.getAChatHistory)(userId, chatId, message);
     for (const model of MODELS) {
         try {
             const completion = await openRouter.chat.send({
@@ -48,8 +104,8 @@ const askAI = async (userId, message) => {
             });
             const reply = completion.choices?.[0]?.message?.content;
             if (reply) {
-                await (0, exports.saveMessage)(userId, "user", message);
-                await (0, exports.saveMessage)(userId, "assistant", reply);
+                await (0, exports.saveMessage)(userId, chatId, "user", message);
+                await (0, exports.saveMessage)(userId, chatId, "assistant", reply);
                 return { reply, modelUsed: model };
             }
         }
@@ -61,10 +117,10 @@ const askAI = async (userId, message) => {
     throw new Error("All models failed");
 };
 exports.askAI = askAI;
-// 🌊 Streaming Response
-const streamAI = async (userId, message, res) => {
+// Streaming Response
+const streamAI = async (userId, message, chatId, res) => {
     const MODELS = (0, smartModel_1.getSmartModels)(message);
-    const history = await (0, exports.getChatHistory)(userId);
+    const history = await (0, exports.getAChatHistory)(userId, chatId, message);
     for (const model of MODELS) {
         try {
             const stream = await openRouter.chat.send({
@@ -92,8 +148,8 @@ const streamAI = async (userId, message, res) => {
                     res.write(content);
                 }
             }
-            await (0, exports.saveMessage)(userId, "user", message);
-            await (0, exports.saveMessage)(userId, "assistant", fullReply);
+            await (0, exports.saveMessage)(userId, chatId, "user", message);
+            await (0, exports.saveMessage)(userId, chatId, "assistant", fullReply);
             res.end();
             return;
         }

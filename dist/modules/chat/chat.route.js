@@ -2,7 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const chat_controller_1 = require("./chat.controller");
+const authMiddleware_1 = require("../../middlewares/authMiddleware");
 const chatRoute = (0, express_1.Router)();
-chatRoute.post('/', chat_controller_1.ChatController.sendMessage);
-chatRoute.post('/stream', chat_controller_1.ChatController.streamAI);
+chatRoute.post('/', authMiddleware_1.authMiddleware, chat_controller_1.ChatController.sendMessage);
+chatRoute.post('/stream', authMiddleware_1.authMiddleware, chat_controller_1.ChatController.streamAI);
+chatRoute.get('/all', authMiddleware_1.authMiddleware, chat_controller_1.ChatController.getAllChats);
+chatRoute.get('/:chatId', authMiddleware_1.authMiddleware, chat_controller_1.ChatController.getSingleChatHistory);
+chatRoute.delete('/:chatId', authMiddleware_1.authMiddleware, chat_controller_1.ChatController.deleteChat);
 exports.default = chatRoute;

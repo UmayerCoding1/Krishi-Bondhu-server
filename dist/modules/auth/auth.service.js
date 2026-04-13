@@ -42,8 +42,8 @@ const verifyUserService = async (req) => {
         case user?.otp?.expiresAt < new Date():
             throw new ApiError_1.ApiError(400, "OTP expired");
         case verifyOTP:
-            const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id });
-            const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id });
+            const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
+            const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
             user.isVerified = true;
             user.otp = "";
             user.otpExpires = undefined;
@@ -65,8 +65,8 @@ const loginService = async (req) => {
     if (!verifyPassword) {
         throw new ApiError_1.ApiError(400, "Invalid password");
     }
-    const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id });
-    const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id });
+    const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
+    const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
     user.accessToken = String(accessToken);
     user.refreshToken = String(refreshToken);
     await user.save();

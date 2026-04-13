@@ -12,6 +12,7 @@ const register = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
 });
 const verifyUser = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const { user, accessToken, refreshToken } = await auth_service_1.authService.verifyUserService(req);
+    console.log('verify', user, accessToken, refreshToken);
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

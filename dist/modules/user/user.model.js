@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = require("mongoose");
+const user_interface_1 = require("./user.interface");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const userSchema = new mongoose_1.Schema({
     name: {
@@ -25,6 +26,11 @@ const userSchema = new mongoose_1.Schema({
     },
     avatar: {
         type: String,
+    },
+    role: {
+        type: String,
+        enum: user_interface_1.ROLE,
+        default: user_interface_1.ROLE.USER
     },
     otp: {
         code: {

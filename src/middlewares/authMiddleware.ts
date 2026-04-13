@@ -35,6 +35,7 @@ export const authMiddleware = async (
             }
             const newAccessToken = await generateAccessToken({
                 _id: user._id,
+                role: user.role
             });
 
             res.cookie("accessToken", newAccessToken, {

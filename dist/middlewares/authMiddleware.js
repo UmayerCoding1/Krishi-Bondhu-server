@@ -25,6 +25,7 @@ const authMiddleware = async (req, res, next) => {
             }
             const newAccessToken = await (0, token_1.generateAccessToken)({
                 _id: user._id,
+                role: user.role
             });
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
