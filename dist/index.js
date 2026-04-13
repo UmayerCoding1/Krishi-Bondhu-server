@@ -15,7 +15,7 @@ const crop_route_1 = __importDefault(require("./modules/crop/crop.route"));
 const chat_route_1 = __importDefault(require("./modules/chat/chat.route"));
 const disease_route_1 = __importDefault(require("./modules/disease/disease.route"));
 const app = (0, express_1.default)();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
