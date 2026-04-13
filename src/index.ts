@@ -20,7 +20,10 @@ app.use(cors({
     credentials: true,
 }));
 
-connectDB();
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello from TypeScript + Express 🚀");

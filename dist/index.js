@@ -21,7 +21,10 @@ app.use((0, cors_1.default)({
     origin: ["http://localhost:3000", "https://krishi-bondhu-bd.vercel.app"],
     credentials: true,
 }));
-(0, db_1.connectDB)();
+app.use(async (req, res, next) => {
+    await (0, db_1.connectDB)();
+    next();
+});
 app.get("/", (req, res) => {
     res.send("Hello from TypeScript + Express 🚀");
 });
