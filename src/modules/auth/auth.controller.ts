@@ -10,7 +10,7 @@ const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
-console.log(cookieOptions)
+
 
 const register = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.registerService(req);

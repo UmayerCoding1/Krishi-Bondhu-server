@@ -10,7 +10,6 @@ const cookieOptions = {
     sameSite: 'none', // cross-domain এর জন্য আবশ্যক
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
-console.log(cookieOptions);
 const register = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.registerService(req);
     if (result) {
