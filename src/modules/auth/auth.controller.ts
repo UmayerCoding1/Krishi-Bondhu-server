@@ -3,6 +3,15 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { authService } from "./auth.service";
 import { ApiResponse } from "../../utils/ApiResponse";
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none' as const,  // cross-domain এর জন্য আবশ্যক
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+console.log(cookieOptions)
+
 const register = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.registerService(req);
 
@@ -15,16 +24,8 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 const verifyUser = asyncHandler(async (req: Request, res: Response) => {
     const { user, accessToken, refreshToken } = await authService.verifyUserService(req);
     console.log('verify', user, accessToken, refreshToken)
-    res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-    });
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-    });
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
 
     return res.status(200).json(
         new ApiResponse(200, "User verified successfully", user)
@@ -33,24 +34,16 @@ const verifyUser = asyncHandler(async (req: Request, res: Response) => {
 
 const login = asyncHandler(async (req: Request, res: Response) => {
     const { userWithoutPassword, accessToken, refreshToken } = await authService.loginService(req);
-    res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-    });
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-    });
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     return res.status(200).json(new ApiResponse(200, "User logged in successfully", userWithoutPassword));
 });
 
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.logoutService(req);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
     return res.status(200).json(new ApiResponse(200, "User logged out successfully"));
 });
 
