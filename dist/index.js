@@ -15,25 +15,22 @@ const crop_route_1 = __importDefault(require("./modules/crop/crop.route"));
 const chat_route_1 = __importDefault(require("./modules/chat/chat.route"));
 const disease_route_1 = __importDefault(require("./modules/disease/disease.route"));
 const app = (0, express_1.default)();
+const PORT = process.env.PORT || 8000;
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
     origin: ["http://localhost:3000", "https://krishi-bondhu-bd.vercel.app"],
     credentials: true,
 }));
-app.use(async (req, res, next) => {
-    await (0, db_1.connectDB)();
-    next();
-});
+(0, db_1.connectDB)();
 app.get("/", (req, res) => {
-    res.send("Hello from TypeScript + Express 🚀");
+    res.send("Hello from TypeScript + Express 🚀 ");
 });
 app.use('/api/v1/auth', auth_route_1.default);
 app.use('/api/v1/crop', crop_route_1.default);
 app.use('/api/v1/chat', chat_route_1.default);
 app.use('/api/v1/disease', disease_route_1.default);
 app.use(error_middleware_1.globalErrorHandle);
-exports.default = app;
-// app.listen(PORT, () => {
-//     console.log(`Server running on http://localhost:${PORT}`);
-// });
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
