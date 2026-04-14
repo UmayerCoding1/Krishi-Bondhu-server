@@ -3,6 +3,7 @@ import { authController } from "./auth.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { authValidation } from "./auth.validation";
 import { authMiddleware } from "../../middlewares/authMiddleware";
+import { User } from "../user/user.model";
 
 
 const authRoute = Router();
@@ -12,6 +13,14 @@ authRoute.post("/verify", validateRequest(authValidation.verifySchema), authCont
 authRoute.post("/login", validateRequest(authValidation.loginSchema), authController.login);
 authRoute.post("/logout", authMiddleware, authController.logout);
 authRoute.get("/me", authMiddleware, authController.getCurrentUser);
+authRoute.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (error) {
+        console.log(error)
+    }
+})
 
 
 export default authRoute;
