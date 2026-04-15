@@ -3,12 +3,23 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { authService } from "./auth.service";
 import { ApiResponse } from "../../utils/ApiResponse";
 
-const cookieOptions = {
+
+
+let cookieOptions;
+process.env.NODE_ENV === 'production' ? cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'none' as const,  // cross-domain এর জন্য আবশ্যক
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+} : cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax' as const,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
+
+console.log(cookieOptions)
+
 
 
 

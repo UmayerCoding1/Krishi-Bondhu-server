@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ROLE = exports.PLANTYPE = void 0;
+exports.STATUS = exports.ROLE = exports.PLANTYPE = void 0;
 var PLANTYPE;
 (function (PLANTYPE) {
     PLANTYPE["FREE"] = "free";
@@ -11,3 +11,11 @@ var ROLE;
     ROLE["USER"] = "user";
     ROLE["ADMIN"] = "admin";
 })(ROLE || (exports.ROLE = ROLE = {}));
+var STATUS;
+(function (STATUS) {
+    STATUS["ACTIVE"] = "active";
+    STATUS["INACTIVE"] = "inactive";
+    STATUS["BANNED"] = "banned";
+    STATUS["BLOCK"] = "block";
+    STATUS["DELETED"] = "deleted";
+})(STATUS || (exports.STATUS = STATUS = {}));

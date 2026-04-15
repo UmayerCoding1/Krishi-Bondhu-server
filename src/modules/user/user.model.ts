@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, models } from "mongoose";
-import { IUSer, PLANTYPE, ROLE } from "./user.interface";
+import { IUSer, PLANTYPE, ROLE, STATUS } from "./user.interface";
 import { createHashPassword } from "../../utils/crypto-hash";
 
 const userSchema = new Schema<IUSer>({
@@ -47,11 +47,21 @@ const userSchema = new Schema<IUSer>({
         type: Boolean,
         default: false
     },
+    fermaerId: {
+        type: String,
+        unique: true,
+        index: true
+    },
     accessToken: {
         type: String,
     },
     refreshToken: {
         type: String,
+    },
+    status: {
+        type: String,
+        enum: STATUS,
+        default: STATUS.ACTIVE
     },
     // plan: {
     //     type: {

@@ -20,6 +20,7 @@ export const authMiddleware = async (
             return next();
         } catch (err) {
             const refreshToken = req.cookies?.refreshToken;
+
             if (!refreshToken) {
                 throw new ApiError(401, "Session expired");
             }
@@ -28,16 +29,20 @@ export const authMiddleware = async (
 
 
             const user = await User.findById(decodedRefresh._id);
+            console.log(user.refreshToken === refreshToken, user)
 
 
-            if (!user || user.refreshToken !== refreshToken) {
+
+            if (user.refreshToken !== refreshToken) {
                 throw new ApiError(401, "Invalid session");
             }
+            console.log(user, 'new fass @=eeee')
             const newAccessToken = await generateAccessToken({
                 _id: user._id,
                 role: user.role
             });
 
+            console.log(newAccessToken)
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
                 secure: true,

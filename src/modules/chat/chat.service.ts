@@ -115,6 +115,10 @@ export const askAI = async (userId: string, message: string, chatId: string) => 
 
             const reply = completion.choices?.[0]?.message?.content;
 
+            if (!reply || reply.trim() === "") {
+                continue;
+            }
+
             if (reply) {
                 await saveMessage(userId, chatId, "user", message);
                 await saveMessage(userId, chatId, "assistant", reply);
@@ -122,7 +126,7 @@ export const askAI = async (userId: string, message: string, chatId: string) => 
                 return { reply, modelUsed: model };
             }
         } catch (err: any) {
-            console.log("Failed:", model);
+            console.error(`Model ${model} failed:`, err.message);
             continue;
         }
     }

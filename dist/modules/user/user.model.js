@@ -49,11 +49,21 @@ const userSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false
     },
+    fermaerId: {
+        type: String,
+        unique: true,
+        index: true
+    },
     accessToken: {
         type: String,
     },
     refreshToken: {
         type: String,
+    },
+    status: {
+        type: String,
+        enum: user_interface_1.STATUS,
+        default: user_interface_1.STATUS.ACTIVE
     },
     // plan: {
     //     type: {

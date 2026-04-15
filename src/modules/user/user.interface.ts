@@ -12,6 +12,14 @@ export enum ROLE {
     ADMIN = "admin",
 }
 
+export enum STATUS {
+    ACTIVE = "active",
+    INACTIVE = "inactive",
+    BANNED = "banned",
+    BLOCK = "block",
+    DELETED = "deleted",
+}
+
 export interface IUSer {
     _id?: Types.ObjectId;
     name: string;
@@ -26,6 +34,7 @@ export interface IUSer {
         slug: string;
     };
     isVerified: boolean;
+    fermaerId?: string;
     // plan?: {
     //     type: PLANTYPE;
     //     startDate: Date;
@@ -33,6 +42,7 @@ export interface IUSer {
     //     token: number;
     //     planId: Types.ObjectId;
     // }
+    status: STATUS;
     accessToken?: string;
     refreshToken?: string;
     createdAt?: Date;

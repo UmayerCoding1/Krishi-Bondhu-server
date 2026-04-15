@@ -20,13 +20,16 @@ const authMiddleware = async (req, res, next) => {
             }
             const decodedRefresh = await (0, token_1.verifyToken)(refreshToken);
             const user = await user_model_1.User.findById(decodedRefresh._id);
-            if (!user || user.refreshToken !== refreshToken) {
+            console.log(user.refreshToken === refreshToken, user);
+            if (user.refreshToken !== refreshToken) {
                 throw new ApiError_1.ApiError(401, "Invalid session");
             }
+            console.log(user, 'new fass @=eeee');
             const newAccessToken = await (0, token_1.generateAccessToken)({
                 _id: user._id,
                 role: user.role
             });
+            console.log(newAccessToken);
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
                 secure: true,

@@ -103,6 +103,9 @@ const askAI = async (userId, message, chatId) => {
                 },
             });
             const reply = completion.choices?.[0]?.message?.content;
+            if (!reply || reply.trim() === "") {
+                continue;
+            }
             if (reply) {
                 await (0, exports.saveMessage)(userId, chatId, "user", message);
                 await (0, exports.saveMessage)(userId, chatId, "assistant", reply);
@@ -110,7 +113,7 @@ const askAI = async (userId, message, chatId) => {
             }
         }
         catch (err) {
-            console.log("Failed:", model);
+            console.error(`Model ${model} failed:`, err.message);
             continue;
         }
     }
