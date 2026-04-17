@@ -6,8 +6,10 @@ const ApiError_1 = require("../../utils/ApiError");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const token_1 = require("../../utils/token");
 const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
+const redis_1 = require("../../config/redis");
 const registerService = async (req) => {
     const { name, email, password } = req.body;
+    console.log(redis_1.redisQueueConnection);
     const existingUser = await user_model_1.User.findOne({ email });
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);
@@ -17,10 +19,10 @@ const registerService = async (req) => {
         slug: slug
     };
     switch (true) {
-        case !!existingUser:
-            throw new ApiError_1.ApiError(400, "User already exists");
-        case !!existingUser && existingUser.isVerified:
-            throw new ApiError_1.ApiError(400, "User already verified");
+        // case !!existingUser:
+        //     throw new ApiError(400, "User already exists");
+        // case !!existingUser && existingUser.isVerified:
+        //     throw new ApiError(400, "User already verified");
         default:
             // const sendOtp = await sendEmail(email, "Verify your email", otp);
             (0, sendEmailQueue_1.sendEmailQueue)({ to: email, sub: "Verify your email", otp });
