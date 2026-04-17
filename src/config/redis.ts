@@ -5,7 +5,7 @@ dotenv.config();
 console.log(process.env.REDIS_URL);
 
 export const redisQueueConnection = {
-    url: process.env.REDIS_URL!,
+    url: process.env.REDIS_URL || "127.0.0.1",
 };
 
 const redisClient = createClient({

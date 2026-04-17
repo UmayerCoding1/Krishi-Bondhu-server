@@ -9,7 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 console.log(process.env.REDIS_URL);
 exports.redisQueueConnection = {
-    url: process.env.REDIS_URL,
+    url: process.env.REDIS_URL || "127.0.0.1",
 };
 const redisClient = (0, redis_1.createClient)({
     url: process.env.REDIS_URL,
