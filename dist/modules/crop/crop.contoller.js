@@ -7,9 +7,11 @@ exports.getCropDataInAi = void 0;
 const asyncHandler_1 = require("../../utils/asyncHandler");
 const generative_ai_1 = require("@google/generative-ai");
 const axios_1 = __importDefault(require("axios"));
+const aiRequest_interface_1 = require("../ai_request/aiRequest.interface");
+const aiRequest_model_1 = require("../ai_request/aiRequest.model");
 const genAI = new generative_ai_1.GoogleGenerativeAI(process.env.GAN_AI_API_KEY);
 exports.getCropDataInAi = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const { location, season, soil } = req.body;
+    const { location, season, soil, userId } = req.body;
     console.log(location, season, soil);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `
@@ -32,6 +34,12 @@ Beshi kotha na.
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
+    const usageMetadata = response.usageMetadata;
+    const tokenUsage = {
+        request_tokens: usageMetadata?.promptTokenCount ?? 0,
+        response_tokens: usageMetadata?.candidatesTokenCount ?? 0,
+        total_tokens: usageMetadata?.totalTokenCount ?? 0,
+    };
     if (text) {
         const cleanString = text
             .replace(/```json/g, '')
@@ -60,14 +68,47 @@ Beshi kotha na.
         }));
         const maxRating = Math.max(...cropsWithImages.map((c) => c.Rating));
         const bestCrop = cropsWithImages.find((c) => c.Rating === maxRating);
+        const aiRequest = new aiRequest_model_1.AiRequest({
+            user: req._id,
+            user_prompt: prompt,
+            ai_response: text,
+            category: aiRequest_interface_1.RequestCategory.CROP_ADVICE,
+            tokenUsage,
+            status: aiRequest_interface_1.AiRequestStatus.SUCCESS,
+            model_used: "gemini-2.5-flash",
+            request_tokens: tokenUsage.request_tokens,
+            response_tokens: tokenUsage.response_tokens,
+            total_tokens: tokenUsage.total_tokens,
+            // location: {
+            //     district: location.district,
+            //     division: location.division,
+            // },
+        });
         return res.status(200).json({
             success: true,
             data: {
                 cropsWithImages,
-                bestCrop
+                bestCrop,
+                requestId: aiRequest._id
             }
         });
     }
+    const aiRequest = new aiRequest_model_1.AiRequest({
+        user: req._id,
+        user_prompt: prompt,
+        ai_response: text,
+        category: aiRequest_interface_1.RequestCategory.CROP_ADVICE,
+        tokenUsage,
+        status: aiRequest_interface_1.AiRequestStatus.FAILED,
+        model_used: "gemini-2.5-flash",
+        request_tokens: tokenUsage.request_tokens,
+        response_tokens: tokenUsage.response_tokens,
+        total_tokens: tokenUsage.total_tokens,
+        // location: {
+        //     district: location.district,
+        //     division: location.division,
+        // },
+    });
     return res.status(500).json({
         success: false,
         message: "Something went wrong"

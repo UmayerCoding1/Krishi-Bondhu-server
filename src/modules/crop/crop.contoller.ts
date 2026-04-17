@@ -2,11 +2,13 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { Request, Response } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
+import { AiRequestStatus, RequestCategory } from "../ai_request/aiRequest.interface";
+import { AiRequest } from "../ai_request/aiRequest.model";
 
 const genAI = new GoogleGenerativeAI(process.env.GAN_AI_API_KEY!);
 
 export const getCropDataInAi = asyncHandler(async (req: Request, res: Response) => {
-    const { location, season, soil } = req.body;
+    const { location, season, soil, userId } = req.body;
     console.log(location, season, soil)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `
@@ -30,6 +32,13 @@ Beshi kotha na.
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
+    const usageMetadata = response.usageMetadata;
+    const tokenUsage = {
+        request_tokens: usageMetadata?.promptTokenCount ?? 0,
+        response_tokens: usageMetadata?.candidatesTokenCount ?? 0,
+        total_tokens: usageMetadata?.totalTokenCount ?? 0,
+    };
+
     if (text) {
         const cleanString = text
             .replace(/```json/g, '')
@@ -67,16 +76,52 @@ Beshi kotha na.
         )
 
         const maxRating = Math.max(...cropsWithImages.map((c: any) => c.Rating))
-        const bestCrop = cropsWithImages.find((c: any) => c.Rating === maxRating)
+        const bestCrop = cropsWithImages.find((c: any) => c.Rating === maxRating);
+
+        const aiRequest = new AiRequest({
+            user: req._id,
+            user_prompt: prompt,
+            ai_response: text,
+            category: RequestCategory.CROP_ADVICE,
+            tokenUsage,
+            status: AiRequestStatus.SUCCESS,
+            model_used: "gemini-2.5-flash",
+            request_tokens: tokenUsage.request_tokens,
+            response_tokens: tokenUsage.response_tokens,
+            total_tokens: tokenUsage.total_tokens,
+            // location: {
+            //     district: location.district,
+            //     division: location.division,
+            // },
+        });
 
         return res.status(200).json({
             success: true,
             data: {
                 cropsWithImages,
-                bestCrop
+                bestCrop,
+                requestId: aiRequest._id
             }
         });
     }
+
+    const aiRequest = new AiRequest({
+        user: req._id,
+        user_prompt: prompt,
+        ai_response: text,
+        category: RequestCategory.CROP_ADVICE,
+        tokenUsage,
+        status: AiRequestStatus.FAILED,
+        model_used: "gemini-2.5-flash",
+        request_tokens: tokenUsage.request_tokens,
+        response_tokens: tokenUsage.response_tokens,
+        total_tokens: tokenUsage.total_tokens,
+
+        // location: {
+        //     district: location.district,
+        //     division: location.division,
+        // },
+    });
 
     return res.status(500).json({
         success: false,

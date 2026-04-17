@@ -5,6 +5,7 @@ import { sendEmail } from "../../services/sendEmail";
 import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { ApiResponse } from "../../utils/ApiResponse";
+import { sendEmailQueue } from "../../queue/sendEmailQueue";
 
 
 const registerService = async (req: Request) => {
@@ -29,11 +30,11 @@ const registerService = async (req: Request) => {
             throw new ApiError(400, "User already verified");
 
         default:
-            const sendOtp = await sendEmail(email, "Verify your email", otp);
-            if (sendOtp.success) {
-                const user = await User.create({ name, email, password, otp: otpData });
-                return user;
-            }
+            // const sendOtp = await sendEmail(email, "Verify your email", otp);
+            sendEmailQueue({ to: email, sub: "Verify your email", otp });
+            const user = await User.create({ name, email, password, otp: otpData });
+            return user;
+
     }
 };
 

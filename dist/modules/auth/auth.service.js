@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authService = void 0;
 const user_model_1 = require("../user/user.model");
 const ApiError_1 = require("../../utils/ApiError");
-const sendEmail_1 = require("../../services/sendEmail");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const token_1 = require("../../utils/token");
+const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
 const registerService = async (req) => {
     const { name, email, password } = req.body;
     const existingUser = await user_model_1.User.findOne({ email });
@@ -22,11 +22,10 @@ const registerService = async (req) => {
         case !!existingUser && existingUser.isVerified:
             throw new ApiError_1.ApiError(400, "User already verified");
         default:
-            const sendOtp = await (0, sendEmail_1.sendEmail)(email, "Verify your email", otp);
-            if (sendOtp.success) {
-                const user = await user_model_1.User.create({ name, email, password, otp: otpData });
-                return user;
-            }
+            // const sendOtp = await sendEmail(email, "Verify your email", otp);
+            (0, sendEmailQueue_1.sendEmailQueue)({ to: email, sub: "Verify your email", otp });
+            const user = await user_model_1.User.create({ name, email, password, otp: otpData });
+            return user;
     }
 };
 const verifyUserService = async (req) => {

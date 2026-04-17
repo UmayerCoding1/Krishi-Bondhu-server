@@ -1,10 +1,12 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: "../../.env" });
 import nodemailer from 'nodemailer';
 
 if (!process.env.NODEMAILER_USER || !process.env.NODEMAILER_PASS) {
   throw new Error("Email credentials missing in .env");
 }
+
+console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
 
 
 const transporter = nodemailer.createTransport({
