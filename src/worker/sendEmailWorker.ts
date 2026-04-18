@@ -20,7 +20,15 @@ const emailWorker = new Worker('email-queue', async (job) => {
         // send retry-queue
 
     }
-}, { connection: redisQueueConnection });
+}, {
+    connection: redisQueueConnection,
+    concurrency: 2,
+
+    limiter: {
+        max: 5,
+        duration: 1000
+    }
+},);
 
 emailWorker.on('failed', (job, error) => {
     console.error(`Worker 1 failed - Job ${job?.id}:`, error.message);

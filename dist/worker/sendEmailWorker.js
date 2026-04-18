@@ -19,7 +19,14 @@ const emailWorker = new bullmq_1.Worker('email-queue', async (job) => {
         console.error(`Worker 1 failed - Job ${job.id}:`, error.message);
         // send retry-queue
     }
-}, { connection: exports.redisQueueConnection });
+}, {
+    connection: exports.redisQueueConnection,
+    concurrency: 2,
+    limiter: {
+        max: 5,
+        duration: 1000
+    }
+});
 emailWorker.on('failed', (job, error) => {
     console.error(`Worker 1 failed - Job ${job?.id}:`, error.message);
 });
