@@ -6,12 +6,10 @@ import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash"
 import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
-import { redisQueueConnection } from "../../config/redis";
 
 
 const registerService = async (req: Request) => {
     const { name, email, password } = req.body;
-    console.log(redisQueueConnection)
     const existingUser = await User.findOne({ email });
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const { slug, hash } = createHashPassword(otp);
