@@ -1,8 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.redisQueueConnection = void 0;
 const bullmq_1 = require("bullmq");
 const sendEmail_1 = require("../services/sendEmail");
-const redis_1 = require("../config/redis");
+exports.redisQueueConnection = {
+    url: process.env.REDIS_URL || "127.0.0.1",
+    tls: {},
+    maxRetriesPerRequest: null,
+};
 const emailWorker = new bullmq_1.Worker('email-queue', async (job) => {
     console.log(`Worker 1 processing job ${job.id}`);
     try {
@@ -14,7 +19,7 @@ const emailWorker = new bullmq_1.Worker('email-queue', async (job) => {
         console.error(`Worker 1 failed - Job ${job.id}:`, error.message);
         // send retry-queue
     }
-}, { connection: redis_1.redisQueueConnection });
+}, { connection: exports.redisQueueConnection });
 emailWorker.on('failed', (job, error) => {
     console.error(`Worker 1 failed - Job ${job?.id}:`, error.message);
 });

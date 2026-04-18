@@ -1,38 +1,61 @@
 import { Queue } from 'bullmq';
-import { redisQueueConnection } from '../config/redis';
+export const redisQueueConnection = {
+    url: process.env.REDIS_URL || "127.0.0.1",
+    tls: {},
+    maxRetriesPerRequest: null,
+
+};
 
 
 
 const emailQueue = new Queue('email-queue', { connection: redisQueueConnection });
 
-export async function sendEmailQueue(data: { to: string, sub: string, otp: string }) {
+export async function sendEmailQueue(data: {
+    to: string;
+    sub: string;
+    otp: string;
+}) {
     try {
-        const res = await emailQueue.add('send-email', {
-            to: data.to,
-            sub: data.sub,
-            otp: data.otp
-        },
+        // Debug only (remove in production)
+        if (process.env.NODE_ENV !== "production") {
+            console.log("REDIS_URL:", process.env.REDIS_URL);
+        }
+
+        const job = await emailQueue.add(
+            "send-email",
+            {
+                to: data.to,
+                sub: data.sub,
+                otp: data.otp,
+            },
             {
                 attempts: 3,
-                backoff: {
-                    type: 'exponential',
-                    delay: 2000
-                },
-                removeOnComplete: {
-                    count: 1000
-                },
-                removeOnFail: {
-                    count: 500
-                },
-            }
 
+                backoff: {
+                    type: "exponential",
+                    delay: 2000,
+                },
+
+
+                removeOnComplete: true, // better than count
+                removeOnFail: false, // keep failed jobs for debugging
+
+                delay: 0,
+            }
         );
 
-        console.log('Job added to send email queue', res.id);
-        return res;
-    } catch (error) {
-        console.error('Error adding job to send email queue', error);
-        throw error;
+        console.log(" Job added to email queue:", job.id);
+
+        return {
+            success: true,
+            jobId: job.id,
+        };
+    } catch (error: any) {
+        console.error(" Error adding job to email queue:", error.message);
+
+        return {
+            success: false,
+            message: error.message,
+        };
     }
 }
-
