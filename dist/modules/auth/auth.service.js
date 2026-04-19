@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authService = void 0;
 const user_model_1 = require("../user/user.model");
@@ -6,6 +9,7 @@ const ApiError_1 = require("../../utils/ApiError");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const token_1 = require("../../utils/token");
 const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
+const redis_1 = __importDefault(require("../../config/redis"));
 const registerService = async (req) => {
     const { name, email, password } = req.body;
     const existingUser = await user_model_1.User.findOne({ email });
@@ -90,10 +94,24 @@ const logoutService = async (req) => {
     return { user };
 };
 const getCurrentUserService = async (req) => {
-    const user = await user_model_1.User.findById(req._id).select('-password -refreshToken -accessToken -otp -slug ');
+    const cacheKey = `user:${req._id}`;
+    try {
+        const cachedUser = await redis_1.default.get(cacheKey);
+        if (cachedUser)
+            return JSON.parse(cachedUser);
+    }
+    catch (err) {
+        console.log("Redis error:", err);
+    }
+    const user = await user_model_1.User.findById(req._id)
+        .select('name email role avatar')
+        .lean();
     if (!user) {
         throw new ApiError_1.ApiError(404, "User not found");
     }
+    await redis_1.default.set(cacheKey, JSON.stringify(user), {
+        EX: 60 * 60 // 1 hour
+    });
     return user;
 };
 exports.authService = {

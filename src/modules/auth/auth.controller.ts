@@ -61,7 +61,9 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
 
 const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await authService.getCurrentUserService(req);
-    return res.status(200).json(new ApiResponse(200, "User fetched successfully", user));
+
+
+    return res.set('Cache-Control', 'private, max-age=300').status(200).json(new ApiResponse(200, "User fetched successfully", user));
 });
 
 export const authController = {

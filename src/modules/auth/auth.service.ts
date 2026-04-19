@@ -6,6 +6,7 @@ import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash"
 import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
+import redisClient from "../../config/redis";
 
 
 const registerService = async (req: Request) => {
@@ -119,13 +120,30 @@ const logoutService = async (req: Request) => {
 }
 
 const getCurrentUserService = async (req: Request) => {
-    const user = await User.findById(req._id).select('-password -refreshToken -accessToken -otp -slug ');
+
+    const cacheKey = `user:${req._id}`;
+
+    try {
+        const cachedUser = await redisClient.get(cacheKey);
+        if (cachedUser) return JSON.parse(cachedUser);
+    } catch (err) {
+        console.log("Redis error:", err);
+    }
+
+    const user = await User.findById(req._id)
+        .select('name email role avatar')
+        .lean();
 
     if (!user) {
         throw new ApiError(404, "User not found");
     }
+
+    await redisClient.set(cacheKey, JSON.stringify(user), {
+        EX: 60 * 60 // 1 hour
+    });
+
     return user;
-}
+};
 
 export const authService = {
     registerService,
