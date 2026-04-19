@@ -1,14 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.redisQueueConnection = void 0;
 exports.sendEmailQueue = sendEmailQueue;
 const bullmq_1 = require("bullmq");
-exports.redisQueueConnection = {
-    url: process.env.REDIS_URL || "127.0.0.1",
-    tls: {},
-    maxRetriesPerRequest: null,
-};
-const emailQueue = new bullmq_1.Queue('email-queue', { connection: exports.redisQueueConnection });
+const redis_1 = require("../config/redis");
+const emailQueue = new bullmq_1.Queue('email-queue', { connection: redis_1.redisQueueConnection });
 async function sendEmailQueue(data) {
     try {
         // Debug only (remove in production)

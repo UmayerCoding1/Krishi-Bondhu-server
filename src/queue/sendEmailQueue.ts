@@ -1,10 +1,6 @@
 import { Queue } from 'bullmq';
-export const redisQueueConnection = {
-    url: process.env.REDIS_URL || "127.0.0.1",
-    tls: {},
-    maxRetriesPerRequest: null,
+import { redisQueueConnection } from '../config/redis';
 
-};
 
 
 

@@ -1,6 +1,7 @@
 import { OpenRouter } from '@openrouter/sdk';
 import { getSmartModels } from '../../utils/smartModel';
 import { Chat } from './chat.model';
+import { saveChatQueue } from '../../queue/saveChatQueue';
 
 const openRouter = new OpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY!
@@ -19,7 +20,7 @@ You are a Bangladeshi agriculture expert.
 
 export const getAllChats = async (userId: string) => {
     try {
-        const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt");
+        const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt messages");
         if (!chats || chats.length === 0) {
             return {
                 success: false,
@@ -72,7 +73,7 @@ export const deleteChat = async (userId: string, chatId: string | string[]) => {
 // this ai AI hepler function
 export const getAChatHistory = async (userId: string, chatId: string, title?: string) => {
     try {
-        let chat = await Chat.findOne({ userId, chatId });
+        let chat = await Chat.findOne({ userId, chatId }).select("messages");
 
         if (!chat) {
             chat = await Chat.create({ userId, chatId, title, messages: [] });
@@ -99,7 +100,7 @@ export const saveMessage = async (
 export const askAI = async (userId: string, message: string, chatId: string) => {
     const MODELS = getSmartModels(message);
     const history = await getAChatHistory(userId, chatId, message);
-
+    console.log('history', history)
     for (const model of MODELS) {
         try {
             const completion = await openRouter.chat.send({
@@ -120,8 +121,8 @@ export const askAI = async (userId: string, message: string, chatId: string) => 
             }
 
             if (reply) {
-                await saveMessage(userId, chatId, "user", message);
-                await saveMessage(userId, chatId, "assistant", reply);
+                saveChatQueue({ userId, chatId, role: "user", content: message });
+                saveChatQueue({ userId, chatId, role: "assistant", content: reply });
 
                 return { reply, modelUsed: model };
             }

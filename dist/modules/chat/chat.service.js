@@ -4,6 +4,7 @@ exports.streamAI = exports.askAI = exports.saveMessage = exports.getAChatHistory
 const sdk_1 = require("@openrouter/sdk");
 const smartModel_1 = require("../../utils/smartModel");
 const chat_model_1 = require("./chat.model");
+const saveChatQueue_1 = require("../../queue/saveChatQueue");
 const openRouter = new sdk_1.OpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY
 });
@@ -19,7 +20,7 @@ You are a Bangladeshi agriculture expert.
 `;
 const getAllChats = async (userId) => {
     try {
-        const chats = await chat_model_1.Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt");
+        const chats = await chat_model_1.Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt messages");
         if (!chats || chats.length === 0) {
             return {
                 success: false,
@@ -72,7 +73,7 @@ exports.deleteChat = deleteChat;
 // this ai AI hepler function
 const getAChatHistory = async (userId, chatId, title) => {
     try {
-        let chat = await chat_model_1.Chat.findOne({ userId, chatId });
+        let chat = await chat_model_1.Chat.findOne({ userId, chatId }).select("messages");
         if (!chat) {
             chat = await chat_model_1.Chat.create({ userId, chatId, title, messages: [] });
         }
@@ -90,6 +91,7 @@ exports.saveMessage = saveMessage;
 const askAI = async (userId, message, chatId) => {
     const MODELS = (0, smartModel_1.getSmartModels)(message);
     const history = await (0, exports.getAChatHistory)(userId, chatId, message);
+    console.log('history', history);
     for (const model of MODELS) {
         try {
             const completion = await openRouter.chat.send({
@@ -107,8 +109,8 @@ const askAI = async (userId, message, chatId) => {
                 continue;
             }
             if (reply) {
-                await (0, exports.saveMessage)(userId, chatId, "user", message);
-                await (0, exports.saveMessage)(userId, chatId, "assistant", reply);
+                (0, saveChatQueue_1.saveChatQueue)({ userId, chatId, role: "user", content: message });
+                (0, saveChatQueue_1.saveChatQueue)({ userId, chatId, role: "assistant", content: reply });
                 return { reply, modelUsed: model };
             }
         }

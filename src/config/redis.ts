@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import dotenv from "dotenv";
+import { RedisOptions } from "bullmq";
 
 dotenv.config();
 
@@ -23,3 +24,22 @@ redisClient.connect().catch((err) => {
 
 
 export default redisClient;
+
+let redisQueueConnection: RedisOptions;
+
+if (process.env.NODE_ENV === "production") {
+    redisQueueConnection = {
+        url: process.env.REDIS_URL || "127.0.0.1",
+        tls: {},
+        maxRetriesPerRequest: null,
+
+    }
+} else {
+    redisQueueConnection = {
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: Number(process.env.REDIS_PORT) || 6379,
+        url: process.env.REDIS_URL!,
+    };
+}
+export { redisQueueConnection };
+console.log(redisQueueConnection);

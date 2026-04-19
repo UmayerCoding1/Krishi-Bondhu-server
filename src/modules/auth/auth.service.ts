@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../user/user.model";
 import { ApiError } from "../../utils/ApiError";
-import { sendEmail } from "../../services/sendEmail";
 import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { ApiResponse } from "../../utils/ApiResponse";
@@ -12,6 +11,16 @@ import redisClient from "../../config/redis";
 const registerService = async (req: Request) => {
     const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+        if (existingUser.isVerified) {
+            return new ApiResponse(400, "User already verified");
+        }
+        else {
+            return new ApiResponse(400, "User already exists");
+        }
+
+    }
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const { slug, hash } = createHashPassword(otp);
 
@@ -21,21 +30,12 @@ const registerService = async (req: Request) => {
         slug: slug
 
     }
-    switch (true) {
-        // case !!existingUser:
-        //     throw new ApiError(400, "User already exists");
+
+    sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    const user = await User.create({ name, email, password, otp: otpData });
+    return user;
 
 
-        // case !!existingUser && existingUser.isVerified:
-        //     throw new ApiError(400, "User already verified");
-
-        default:
-            // const sendOtp = await sendEmail(email, "Verify your email", otp);
-            sendEmailQueue({ to: email, sub: "Verify your email", otp });
-            const user = await User.create({ name, email, password, otp: otpData });
-            return user;
-
-    }
 };
 
 

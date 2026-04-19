@@ -1,11 +1,7 @@
 import { Worker } from 'bullmq';
 import { sendEmail } from '../services/sendEmail';
-export const redisQueueConnection = {
-    url: process.env.REDIS_URL || "127.0.0.1",
-    tls: {},
-    maxRetriesPerRequest: null,
+import { redisQueueConnection } from '../config/redis';
 
-};
 
 
 const emailWorker = new Worker('email-queue', async (job) => {
