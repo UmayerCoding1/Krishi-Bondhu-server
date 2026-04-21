@@ -39,6 +39,7 @@ If the user asks anything unrelated to agriculture, farming, or rural livelihood
 `;
 const getAllChats = async (userId) => {
     try {
+        console.log('first');
         const chats = await chat_model_1.Chat.find({ userId }).sort({ createdAt: -1 }).select("title chatId userId createdAt messages");
         if (!chats || chats.length === 0) {
             return {

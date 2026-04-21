@@ -15,6 +15,7 @@ const crop_route_1 = __importDefault(require("./modules/crop/crop.route"));
 const chat_route_1 = __importDefault(require("./modules/chat/chat.route"));
 const disease_route_1 = __importDefault(require("./modules/disease/disease.route"));
 const user_route_1 = __importDefault(require("./modules/user/user.route"));
+const http_1 = __importDefault(require("http"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
 app.use(express_1.default.json());
@@ -23,6 +24,13 @@ app.use((0, cors_1.default)({
     origin: ["http://localhost:3000", "https://krishi-bondhu-bd.vercel.app"],
     credentials: true,
 }));
+setInterval(() => {
+    http_1.default.get('https://krishi-bondhu-server1.onrender.com/', (res) => {
+        console.log('Ping status:', res.statusCode);
+    }).on('error', (err) => {
+        console.log('Ping error:', err.message);
+    });
+}, 1000);
 (0, db_1.connectDB)();
 app.get("/", (req, res) => {
     res.send("Hello from TypeScript + Express 🚀 ");
