@@ -15,7 +15,7 @@ process.env.NODE_ENV === 'production' ? cookieOptions = {
     httpOnly: true,
     secure: false,
     sameSite: 'lax' as const,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 console.log(cookieOptions)
@@ -58,14 +58,12 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json(new ApiResponse(200, "User logged out successfully"));
 });
 
-
 const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await authService.getCurrentUserService(req);
-
-
-    return res.set('Cache-Control', 'private, max-age=300').status(200).json(new ApiResponse(200, "User fetched successfully", user));
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "User fetched successfully", user));
 });
-
 export const authController = {
     register,
     login,

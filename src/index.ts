@@ -23,13 +23,17 @@ app.use(cors({
     credentials: true,
 }));
 
+let pinggCount = 0;
+
 setInterval(() => {
+
     https.get('https://krishi-bondhu-server1.onrender.com/', (res) => {
-        console.log('Ping status:', res.statusCode);
+        console.log('Ping status:', res.statusCode, 'count:', pinggCount);
+        pinggCount += 1
     }).on('error', (err) => {
         console.log('Ping error:', err.message);
     })
-}, 1000 * 60 * 10); // 10 minutes
+}, 1000 * 60 * 10);
 
 
 connectDB();
