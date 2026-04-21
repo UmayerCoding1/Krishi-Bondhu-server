@@ -11,7 +11,7 @@ import cropRouter from "./modules/crop/crop.route";
 import chatRoute from "./modules/chat/chat.route";
 import diseaseDetectionRouter from "./modules/disease/disease.route";
 import userRouter from "./modules/user/user.route";
-import http from 'http';
+import https from 'https';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -24,12 +24,12 @@ app.use(cors({
 }));
 
 setInterval(() => {
-    http.get('https://krishi-bondhu-server1.onrender.com/', (res) => {
+    https.get('https://krishi-bondhu-server1.onrender.com/', (res) => {
         console.log('Ping status:', res.statusCode);
     }).on('error', (err) => {
         console.log('Ping error:', err.message);
     })
-}, 1000);
+}, 1000 * 60 * 10); // 10 minutes
 
 
 connectDB();
