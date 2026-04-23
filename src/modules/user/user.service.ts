@@ -41,5 +41,30 @@ export const userServices = {
             success: true, message: "Avatar updated successfully",
             avatar: user.avatar
         }
+    },
+
+    updateUserNameService: async (req: Request) => {
+        const { name } = req.body;
+        if (!name) {
+            throw new Error("Name is required");
+        }
+
+        const cacheKey = `user:${req._id}`;
+        redisClient.del(cacheKey);
+
+        const user = await User.findByIdAndUpdate(req._id, { name }, { returnDocument: 'after' }).select("-password -accessToken -refreshToken -otp -__v ");
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+        await redisClient.set(cacheKey, JSON.stringify(user), {
+            EX: 60 * 60 // 1 hour
+        });
+
+        return {
+            success: true,
+            message: "Name updated successfully",
+            data: user
+        }
     }
 }

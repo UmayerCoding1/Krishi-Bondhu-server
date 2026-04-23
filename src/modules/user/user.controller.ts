@@ -12,5 +12,11 @@ export const userControllers = {
     updateUserAvatar: asyncHandler(async (req: Request, res: Response) => {
         const { success, message, avatar } = await userServices.updateUserAvatarService(req);
         return res.status(success ? 200 : 400).json(new ApiResponse(success ? 200 : 400, message, { avatar }));
+    }),
+
+    updateUserName: asyncHandler(async (req: Request, res: Response) => {
+        const result = await userServices.updateUserNameService(req);
+        console.log('result', result)
+        return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message, result.data));
     })
 }

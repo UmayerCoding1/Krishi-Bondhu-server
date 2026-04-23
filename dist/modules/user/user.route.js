@@ -9,4 +9,5 @@ const uploader_1 = require("../../utils/uploader");
 const userRouter = (0, express_1.Router)();
 userRouter.get("/", authMiddleware_1.authMiddleware, (0, verifyRole_1.verifyRole)(user_interface_1.ROLE.ADMIN), user_controller_1.userControllers.getAllUsers);
 userRouter.patch('/me/avatar', authMiddleware_1.authMiddleware, uploader_1.Uploader.single('avatar'), user_controller_1.userControllers.updateUserAvatar);
+userRouter.patch('/me/profile', authMiddleware_1.authMiddleware, user_controller_1.userControllers.updateUserName);
 exports.default = userRouter;
