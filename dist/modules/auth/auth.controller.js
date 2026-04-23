@@ -39,8 +39,8 @@ const login = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
 const changePassword = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.changePasswordService(req);
     if (result.success) {
-        // res.clearCookie('accessToken', cookieOptions);
-        // res.clearCookie('refreshToken', cookieOptions);
+        res.clearCookie('accessToken', cookieOptions);
+        res.clearCookie('refreshToken', cookieOptions);
     }
     return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message));
 });
