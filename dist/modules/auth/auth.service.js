@@ -105,7 +105,7 @@ const getCurrentUserService = async (req) => {
         console.log("Redis error:", err);
     }
     const user = await user_model_1.User.findById(req._id)
-        .select('name email role avatar')
+        .select("-password -accessToken -refreshToken -otp -__v ")
         .lean();
     if (!user) {
         throw new ApiError_1.ApiError(404, "User not found");

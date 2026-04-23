@@ -131,7 +131,7 @@ const getCurrentUserService = async (req: Request) => {
     }
 
     const user = await User.findById(req._id)
-        .select('name email role avatar')
+        .select("-password -accessToken -refreshToken -otp -__v ")
         .lean();
 
     if (!user) {

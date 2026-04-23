@@ -65,6 +65,7 @@ const userSchema = new mongoose_1.Schema({
         enum: user_interface_1.STATUS,
         default: user_interface_1.STATUS.ACTIVE
     },
+    system_config: {},
     // plan: {
     //     type: {
     //         type: String,

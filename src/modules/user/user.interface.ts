@@ -35,6 +35,7 @@ export interface IUSer {
     };
     isVerified: boolean;
     fermaerId?: string;
+    system_config: {},
     // plan?: {
     //     type: PLANTYPE;
     //     startDate: Date;

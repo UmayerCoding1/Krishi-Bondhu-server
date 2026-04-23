@@ -63,6 +63,7 @@ const userSchema = new Schema<IUSer>({
         enum: STATUS,
         default: STATUS.ACTIVE
     },
+    system_config: {},
     // plan: {
     //     type: {
     //         type: String,

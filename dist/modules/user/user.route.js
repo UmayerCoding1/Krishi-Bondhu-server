@@ -5,6 +5,8 @@ const user_controller_1 = require("./user.controller");
 const authMiddleware_1 = require("../../middlewares/authMiddleware");
 const verifyRole_1 = require("../../middlewares/verifyRole");
 const user_interface_1 = require("../user/user.interface");
+const uploader_1 = require("../../utils/uploader");
 const userRouter = (0, express_1.Router)();
 userRouter.get("/", authMiddleware_1.authMiddleware, (0, verifyRole_1.verifyRole)(user_interface_1.ROLE.ADMIN), user_controller_1.userControllers.getAllUsers);
+userRouter.patch('/me/avatar', authMiddleware_1.authMiddleware, uploader_1.Uploader.single('avatar'), user_controller_1.userControllers.updateUserAvatar);
 exports.default = userRouter;
