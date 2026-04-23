@@ -108,6 +108,27 @@ const loginService = async (req: Request) => {
     return { userWithoutPassword, accessToken, refreshToken };
 }
 
+const changePasswordService = async (req: Request) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const verifyPassword = verifyHashPassword(oldPassword, user.slug, user.password);
+    if (!verifyPassword) {
+        throw new ApiError(400, "Invalid password");
+    }
+
+    const { slug, hash } = createHashPassword(newPassword);
+
+    const updateResult = await User.updateOne(
+        { _id: user._id },
+        { $set: { password: hash, slug: slug } }
+    );
+    return { success: true, message: "Password changed successfully" };
+}
+
 const logoutService = async (req: Request) => {
     const user = await User.findById(req._id)
     if (!user) {
@@ -150,5 +171,6 @@ export const authService = {
     loginService,
     verifyUserService,
     logoutService,
-    getCurrentUserService
+    getCurrentUserService,
+    changePasswordService
 }

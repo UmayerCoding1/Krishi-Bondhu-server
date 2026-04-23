@@ -16,8 +16,14 @@ const verifySchema = z.object({
     otp: z.number()
 });
 
+const changePasswordSchema = z.object({
+    oldPassword: z.string().min(6, "Password must be at least 6 characters long"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters long"),
+});
+
 export const authValidation = {
     registerSchema,
     loginSchema,
-    verifySchema
+    verifySchema,
+    changePasswordSchema
 }

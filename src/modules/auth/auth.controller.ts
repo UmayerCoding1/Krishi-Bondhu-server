@@ -50,6 +50,15 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json(new ApiResponse(200, "User logged in successfully", userWithoutPassword));
 });
 
+const changePassword = asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.changePasswordService(req);
+    if (result.success) {
+        res.clearCookie('accessToken', cookieOptions);
+        res.clearCookie('refreshToken', cookieOptions);
+    }
+    return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message));
+});
+
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.logoutService(req);
@@ -69,5 +78,6 @@ export const authController = {
     login,
     verifyUser,
     logout,
-    getCurrentUser
+    getCurrentUser,
+    changePassword
 }

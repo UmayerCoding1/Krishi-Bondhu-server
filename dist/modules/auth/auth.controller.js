@@ -36,6 +36,14 @@ const login = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     res.cookie('refreshToken', refreshToken, cookieOptions);
     return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged in successfully", userWithoutPassword));
 });
+const changePassword = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const result = await auth_service_1.authService.changePasswordService(req);
+    if (result.success) {
+        // res.clearCookie('accessToken', cookieOptions);
+        // res.clearCookie('refreshToken', cookieOptions);
+    }
+    return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message));
+});
 const logout = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.logoutService(req);
     res.clearCookie('accessToken', cookieOptions);
@@ -53,5 +61,6 @@ exports.authController = {
     login,
     verifyUser,
     logout,
-    getCurrentUser
+    getCurrentUser,
+    changePassword
 };
