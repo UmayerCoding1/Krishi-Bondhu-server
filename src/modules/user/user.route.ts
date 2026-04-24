@@ -10,5 +10,6 @@ const userRouter = Router();
 userRouter.get("/", authMiddleware, verifyRole(ROLE.ADMIN), userControllers.getAllUsers);
 userRouter.patch('/me/avatar', authMiddleware, Uploader.single('avatar'), userControllers.updateUserAvatar);
 userRouter.patch('/me/profile', authMiddleware, userControllers.updateUserName);
+userRouter.patch('/notification', authMiddleware, userControllers.updateNotificationSettings);
 
 export default userRouter;

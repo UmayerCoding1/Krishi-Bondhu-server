@@ -37,7 +37,6 @@ export interface IUSer {
     isVerified: boolean;
     fermaerId?: string;
     system_config: {
-
         notification: {
             email: boolean,
             system_notification: boolean,
