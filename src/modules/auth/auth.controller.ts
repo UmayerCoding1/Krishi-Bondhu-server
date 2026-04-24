@@ -62,6 +62,11 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
     return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message));
 });
 
+const toggleTwoFactor = asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.toggleTwoFactorService(req);
+    return res.status(result.statusCode).json(new ApiResponse(result.statusCode, result.message));
+});
+
 const resendOTP = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.resendOTPService(req);
     return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message));
@@ -88,5 +93,6 @@ export const authController = {
     logout,
     getCurrentUser,
     changePassword,
-    resendOTP
+    resendOTP,
+    toggleTwoFactor
 }

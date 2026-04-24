@@ -14,6 +14,7 @@ authRoute.post("/resend-otp", auth_controller_1.authController.resendOTP);
 authRoute.patch("/change-password", authMiddleware_1.authMiddleware, (0, validateRequest_1.validateRequest)(auth_validation_1.authValidation.changePasswordSchema), auth_controller_1.authController.changePassword);
 authRoute.post("/logout", authMiddleware_1.authMiddleware, auth_controller_1.authController.logout);
 authRoute.get("/me", authMiddleware_1.authMiddleware, auth_controller_1.authController.getCurrentUser);
+authRoute.patch("/toggle-two-factor", authMiddleware_1.authMiddleware, auth_controller_1.authController.toggleTwoFactor);
 authRoute.get('/users', async (req, res) => {
     try {
         const users = await user_model_1.User.find();

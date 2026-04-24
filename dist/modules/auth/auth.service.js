@@ -37,14 +37,11 @@ const registerService = async (req) => {
 const verifyUserService = async (req) => {
     const { email, otp } = req.body;
     const user = await user_model_1.User.findOne({ email });
-    console.log(user);
     if (user?.isTwoFactorEnabled) {
         const verifyOTP = (0, crypto_hash_1.verifyHashPassword)(String(otp), user?.otp?.slug, user?.otp?.code);
-        console.log(verifyOTP);
         if (!verifyOTP) {
             throw new ApiError_1.ApiError(400, "Invalid OTP");
         }
-        console.log(verifyOTP);
         if (user?.otp?.expiresAt < new Date()) {
             throw new ApiError_1.ApiError(400, "OTP expired");
         }
@@ -58,7 +55,6 @@ const verifyUserService = async (req) => {
         await user.save();
         return { user, accessToken, refreshToken };
     }
-    console.log('user?.isVerified', user?.isVerified);
     if (user?.isVerified) {
         throw new ApiError_1.ApiError(400, "User already verified");
     }
@@ -138,11 +134,27 @@ const changePasswordService = async (req) => {
     const updateResult = await user_model_1.User.updateOne({ _id: user._id }, { $set: { password: hash, slug: slug } });
     return { success: true, message: "Password changed successfully" };
 };
-const logoutService = async (req) => {
+const toggleTwoFactorService = async (req) => {
     const user = await user_model_1.User.findById(req._id);
+    const cacheKey = `user:${req._id}`;
     if (!user) {
         throw new ApiError_1.ApiError(404, "User not found");
     }
+    user.isTwoFactorEnabled = !user.isTwoFactorEnabled;
+    await user.save();
+    await redis_1.default.set(cacheKey, JSON.stringify(user));
+    return {
+        statusCode: 200,
+        message: "Two-factor authentication " + (user.isTwoFactorEnabled ? "enabled" : "disabled")
+    };
+};
+const logoutService = async (req) => {
+    const user = await user_model_1.User.findById(req._id);
+    const cacheKey = `user:${req._id}`;
+    if (!user) {
+        throw new ApiError_1.ApiError(404, "User not found");
+    }
+    await redis_1.default.del(cacheKey);
     user.accessToken = "";
     user.refreshToken = "";
     await user.save();
@@ -193,5 +205,6 @@ exports.authService = {
     logoutService,
     getCurrentUserService,
     changePasswordService,
-    resendOTPService
+    resendOTPService,
+    toggleTwoFactorService
 };

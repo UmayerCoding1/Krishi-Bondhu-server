@@ -45,14 +45,13 @@ const verifyUserService = async (req: Request) => {
 
     const user = await User.findOne({ email });
 
-    console.log(user)
+
     if (user?.isTwoFactorEnabled) {
         const verifyOTP = verifyHashPassword(String(otp), user?.otp?.slug, user?.otp?.code);
-        console.log(verifyOTP)
         if (!verifyOTP) {
             throw new ApiError(400, "Invalid OTP");
         }
-        console.log(verifyOTP)
+
         if (user?.otp?.expiresAt < new Date()) {
             throw new ApiError(400, "OTP expired");
         }
@@ -69,7 +68,6 @@ const verifyUserService = async (req: Request) => {
         return { user, accessToken, refreshToken };
     }
 
-    console.log('user?.isVerified', user?.isVerified)
     if (user?.isVerified) {
         throw new ApiError(400, "User already verified");
     }
@@ -178,11 +176,28 @@ const changePasswordService = async (req: Request) => {
     return { success: true, message: "Password changed successfully" };
 }
 
-const logoutService = async (req: Request) => {
-    const user = await User.findById(req._id)
+const toggleTwoFactorService = async (req: Request) => {
+    const user = await User.findById(req._id);
+    const cacheKey = `user:${req._id}`;
     if (!user) {
         throw new ApiError(404, "User not found");
     }
+    user.isTwoFactorEnabled = !user.isTwoFactorEnabled;
+    await user.save();
+    await redisClient.set(cacheKey, JSON.stringify(user));
+    return {
+        statusCode: 200,
+        message: "Two-factor authentication " + (user.isTwoFactorEnabled ? "enabled" : "disabled")
+    };
+}
+
+const logoutService = async (req: Request) => {
+    const user = await User.findById(req._id);
+    const cacheKey = `user:${req._id}`;
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    await redisClient.del(cacheKey);
     user.accessToken = "";
     user.refreshToken = "";
     await user.save();
@@ -242,5 +257,6 @@ export const authService = {
     logoutService,
     getCurrentUserService,
     changePasswordService,
-    resendOTPService
+    resendOTPService,
+    toggleTwoFactorService
 }
