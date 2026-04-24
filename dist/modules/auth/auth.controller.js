@@ -44,6 +44,10 @@ const changePassword = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     }
     return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message));
 });
+const resendOTP = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const result = await auth_service_1.authService.resendOTPService(req);
+    return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message));
+});
 const logout = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.logoutService(req);
     res.clearCookie('accessToken', cookieOptions);
@@ -62,5 +66,6 @@ exports.authController = {
     verifyUser,
     logout,
     getCurrentUser,
-    changePassword
+    changePassword,
+    resendOTP
 };

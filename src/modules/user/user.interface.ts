@@ -33,9 +33,17 @@ export interface IUSer {
         expiresAt: Date;
         slug: string;
     };
+    isTwoFactorEnabled: boolean,
     isVerified: boolean;
     fermaerId?: string;
-    system_config: {},
+    system_config: {
+
+        notification: {
+            email: boolean,
+            system_notification: boolean,
+            safety_alert: boolean,
+        }
+    },
     // plan?: {
     //     type: PLANTYPE;
     //     startDate: Date;

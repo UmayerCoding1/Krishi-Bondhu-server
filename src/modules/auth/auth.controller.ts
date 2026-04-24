@@ -59,6 +59,11 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
     return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message));
 });
 
+const resendOTP = asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.resendOTPService(req);
+    return res.status(result.success ? 200 : 400).json(new ApiResponse(result.success ? 200 : 400, result.message));
+});
+
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.logoutService(req);
@@ -79,5 +84,6 @@ export const authController = {
     verifyUser,
     logout,
     getCurrentUser,
-    changePassword
+    changePassword,
+    resendOTP
 }

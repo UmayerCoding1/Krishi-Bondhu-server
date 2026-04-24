@@ -43,6 +43,10 @@ const userSchema = new Schema<IUSer>({
             type: String,
         }
     },
+    isTwoFactorEnabled: {
+        type: Boolean,
+        default: false
+    },
     isVerified: {
         type: Boolean,
         default: false
@@ -63,7 +67,22 @@ const userSchema = new Schema<IUSer>({
         enum: STATUS,
         default: STATUS.ACTIVE
     },
-    system_config: {},
+    system_config: {
+        notification: {
+            email: {
+                type: Boolean,
+                default: false
+            },
+            system_notification: {
+                type: Boolean,
+                default: false
+            },
+            safety_alert: {
+                type: Boolean,
+                default: false
+            }
+        }
+    },
     // plan: {
     //     type: {
     //         type: String,

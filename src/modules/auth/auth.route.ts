@@ -11,6 +11,7 @@ const authRoute = Router();
 authRoute.post("/register", validateRequest(authValidation.registerSchema), authController.register);
 authRoute.post("/verify", validateRequest(authValidation.verifySchema), authController.verifyUser);
 authRoute.post("/login", validateRequest(authValidation.loginSchema), authController.login);
+authRoute.post("/resend-otp", authController.resendOTP);
 authRoute.patch("/change-password", authMiddleware, validateRequest(authValidation.changePasswordSchema), authController.changePassword);
 authRoute.post("/logout", authMiddleware, authController.logout);
 authRoute.get("/me", authMiddleware, authController.getCurrentUser);

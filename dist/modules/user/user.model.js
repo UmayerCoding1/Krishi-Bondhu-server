@@ -45,6 +45,10 @@ const userSchema = new mongoose_1.Schema({
             type: String,
         }
     },
+    isTwoFactorEnabled: {
+        type: Boolean,
+        default: false
+    },
     isVerified: {
         type: Boolean,
         default: false
@@ -65,7 +69,22 @@ const userSchema = new mongoose_1.Schema({
         enum: user_interface_1.STATUS,
         default: user_interface_1.STATUS.ACTIVE
     },
-    system_config: {},
+    system_config: {
+        notification: {
+            email: {
+                type: Boolean,
+                default: false
+            },
+            system_notification: {
+                type: Boolean,
+                default: false
+            },
+            safety_alert: {
+                type: Boolean,
+                default: false
+            }
+        }
+    },
     // plan: {
     //     type: {
     //         type: String,

@@ -129,11 +129,32 @@ const getCurrentUserService = async (req) => {
     });
     return user;
 };
+const resendOTPService = async (req) => {
+    const { email } = req.body;
+    const user = await user_model_1.User.findOne({ email });
+    if (!user) {
+        throw new ApiError_1.ApiError(404, "User not found");
+    }
+    if (user.isVerified) {
+        throw new ApiError_1.ApiError(400, "User already verified");
+    }
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);
+    const otpData = {
+        code: hash,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        slug: slug
+    };
+    (0, sendEmailQueue_1.sendEmailQueue)({ to: email, sub: "Verify your email", otp });
+    await user_model_1.User.updateOne({ _id: user._id }, { $set: { otp: otpData } });
+    return { success: true, message: "OTP sent successfully" };
+};
 exports.authService = {
     registerService,
     loginService,
     verifyUserService,
     logoutService,
     getCurrentUserService,
-    changePasswordService
+    changePasswordService,
+    resendOTPService
 };
