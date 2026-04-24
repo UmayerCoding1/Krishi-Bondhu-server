@@ -1,0 +1,78 @@
+# Krishi Bondho API Documentation 🚀
+
+This document provides a detailed list of all available API endpoints for the Krishi Bondho (কৃষি বন্ধু) backend, including required request bodies and parameters.
+
+**Base URL**: `http://localhost:8000/api/v1`
+
+---
+
+## 🔐 Authentication Modules
+`Base Path: /api/v1/auth`
+
+| Method | Endpoint | Body Data (JSON) | Params | Auth |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/register` | `{ name, email, password }` | - | No |
+| `POST` | `/verify` | `{ email, otp }` | - | No |
+| `POST` | `/login` | `{ email, password }` | - | No |
+| `POST` | `/resend-otp` | `{ email }` | - | No |
+| `PATCH` | `/change-password`| `{ oldPassword, newPassword }` | - | Yes |
+| `POST` | `/logout` | - | - | Yes |
+| `GET` | `/me` | - | - | Yes |
+| `PATCH` | `/toggle-two-factor`| - | - | Yes |
+
+---
+
+## 👤 User Management
+`Base Path: /api/v1/users`
+
+| Method | Endpoint | Body Data | Params | Auth |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/` | - | `page`, `limit` | Yes (Admin) |
+| `PATCH` | `/me/avatar` | `FormData { avatar: file }` | - | Yes |
+| `PATCH` | `/me/profile` | `{ name }` | - | Yes |
+| `PATCH` | `/notification` | `{ type, value }` | - | Yes |
+
+> **Note on `/notification`**: `type` can be `email`, `system_notification`, or `safety_alert`. `value` is boolean.
+
+---
+
+## 🤖 AI Agricultural Chat
+`Base Path: /api/v1/chat`
+
+| Method | Endpoint | Body Data (JSON) | Params | Auth |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/` | `{ message, userId, chatId? }` | - | Yes |
+| `POST` | `/stream` | `{ message, userId, chatId? }` | - | Yes |
+| `GET` | `/all` | - | - | Yes |
+| `GET` | `/:chatId` | - | `chatId` | Yes |
+| `DELETE` | `/:chatId` | - | `chatId` | Yes |
+
+---
+
+## 🌾 Crop Advisor
+`Base Path: /api/v1/crop`
+
+| Method | Endpoint | Body Data (JSON) | Params | Auth |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/` | `{ location, season, soil, userId }` | - | Yes |
+
+---
+
+## 🔍 Disease Detection
+`Base Path: /api/v1/disease`
+
+| Method | Endpoint | Body Data | Params | Auth |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/detect` | `FormData { disease_crop: file }` | - | No |
+
+---
+
+## 🛠️ Global Middlewares
+- **Authentication**: JWT-based via HTTP-only cookies.
+- **Validation**: Schema validation using **Zod** for all POST/PATCH requests.
+- **File Upload**: Handled via **Multer** (Multipart/Form-Data).
+- **Rate Limiting**: Applied to sensitive endpoints like `/disease/detect`.
+- **Background Tasks**: BullMQ & Redis manage email and heavy data persistence.
+
+---
+Built with ❤️ for Krishi Bondho.
