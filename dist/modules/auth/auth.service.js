@@ -11,6 +11,7 @@ const token_1 = require("../../utils/token");
 const ApiResponse_1 = require("../../utils/ApiResponse");
 const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
 const redis_1 = __importDefault(require("../../config/redis"));
+const user_interface_1 = require("../user/user.interface");
 const registerService = async (req) => {
     const { name, email, password } = req.body;
     const existingUser = await user_model_1.User.findOne({ email });
@@ -36,6 +37,28 @@ const registerService = async (req) => {
 const verifyUserService = async (req) => {
     const { email, otp } = req.body;
     const user = await user_model_1.User.findOne({ email });
+    console.log(user);
+    if (user?.isTwoFactorEnabled) {
+        const verifyOTP = (0, crypto_hash_1.verifyHashPassword)(String(otp), user?.otp?.slug, user?.otp?.code);
+        console.log(verifyOTP);
+        if (!verifyOTP) {
+            throw new ApiError_1.ApiError(400, "Invalid OTP");
+        }
+        console.log(verifyOTP);
+        if (user?.otp?.expiresAt < new Date()) {
+            throw new ApiError_1.ApiError(400, "OTP expired");
+        }
+        const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
+        const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
+        user.isVerified = true;
+        user.otp = "";
+        user.otpExpires = undefined;
+        user.accessToken = String(accessToken);
+        user.refreshToken = String(refreshToken);
+        await user.save();
+        return { user, accessToken, refreshToken };
+    }
+    console.log('user?.isVerified', user?.isVerified);
     if (user?.isVerified) {
         throw new ApiError_1.ApiError(400, "User already verified");
     }
@@ -69,6 +92,23 @@ const loginService = async (req) => {
     if (!verifyPassword) {
         throw new ApiError_1.ApiError(400, "Invalid password");
     }
+    if (!user.isVerified) {
+        throw new ApiError_1.ApiError(400, "User not verified");
+    }
+    if (user.status === user_interface_1.STATUS.BANNED) {
+        throw new ApiError_1.ApiError(400, "User is banned");
+    }
+    if (user.status === user_interface_1.STATUS.BLOCK) {
+        throw new ApiError_1.ApiError(400, "User is blocked");
+    }
+    if (user.status === user_interface_1.STATUS.DELETED) {
+        throw new ApiError_1.ApiError(400, "User is deleted");
+    }
+    if (user.isTwoFactorEnabled) {
+        const otp = user.generateOTP();
+        await user.save();
+        return { enabled2FA: true, };
+    }
     const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
     const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
     user.accessToken = String(accessToken);
@@ -82,7 +122,7 @@ const loginService = async (req) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };
-    return { userWithoutPassword, accessToken, refreshToken };
+    return { userWithoutPassword, accessToken, refreshToken, enabled2FA: false };
 };
 const changePasswordService = async (req) => {
     const { oldPassword, newPassword } = req.body;
@@ -134,9 +174,6 @@ const resendOTPService = async (req) => {
     const user = await user_model_1.User.findOne({ email });
     if (!user) {
         throw new ApiError_1.ApiError(404, "User not found");
-    }
-    if (user.isVerified) {
-        throw new ApiError_1.ApiError(400, "User already verified");
     }
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);

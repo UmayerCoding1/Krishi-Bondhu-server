@@ -1,6 +1,7 @@
 import mongoose, { Schema, model, models } from "mongoose";
 import { IUSer, PLANTYPE, ROLE, STATUS } from "./user.interface";
-import { createHashPassword } from "../../utils/crypto-hash";
+import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
+import { sendEmailQueue } from "../../queue/sendEmailQueue";
 
 const userSchema = new Schema<IUSer>({
     name: {
@@ -115,5 +116,32 @@ userSchema.pre("save", async function (next) {
         this.slug = slug;
     }
 });
+
+userSchema.methods.generateOTP = function () {
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const { slug, hash } = createHashPassword(otp);
+    const otpData = {
+        code: hash,
+        expiresAt: expiresAt,
+        slug: slug
+    }
+
+    sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
+    this.otp = otpData;
+    return otpData;
+}
+
+userSchema.methods.verifyOTP = function (otp: string) {
+    const verifyOTP = verifyHashPassword(otp, this.otp.slug, this.otp.code);
+    if (verifyOTP) {
+        this.isVerified = true;
+        this.otp = "";
+        this.otpExpires = undefined;
+        this.save();
+        return true;
+    }
+    return false;
+}
 
 export const User = models.User || model<IUSer>("User", userSchema);

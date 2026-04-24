@@ -6,6 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
 import redisClient from "../../config/redis";
+import { STATUS } from "../user/user.interface";
 
 
 const registerService = async (req: Request) => {
@@ -44,7 +45,31 @@ const verifyUserService = async (req: Request) => {
 
     const user = await User.findOne({ email });
 
+    console.log(user)
+    if (user?.isTwoFactorEnabled) {
+        const verifyOTP = verifyHashPassword(String(otp), user?.otp?.slug, user?.otp?.code);
+        console.log(verifyOTP)
+        if (!verifyOTP) {
+            throw new ApiError(400, "Invalid OTP");
+        }
+        console.log(verifyOTP)
+        if (user?.otp?.expiresAt < new Date()) {
+            throw new ApiError(400, "OTP expired");
+        }
 
+        const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
+        const refreshToken = await generateRefreshToken({ _id: user._id, role: user.role });
+
+        user.isVerified = true;
+        user.otp = "";
+        user.otpExpires = undefined;
+        user.accessToken = String(accessToken);
+        user.refreshToken = String(refreshToken);
+        await user.save();
+        return { user, accessToken, refreshToken };
+    }
+
+    console.log('user?.isVerified', user?.isVerified)
     if (user?.isVerified) {
         throw new ApiError(400, "User already verified");
     }
@@ -91,6 +116,30 @@ const loginService = async (req: Request) => {
     if (!verifyPassword) {
         throw new ApiError(400, "Invalid password");
     }
+
+    if (!user.isVerified) {
+        throw new ApiError(400, "User not verified");
+    }
+
+    if (user.status === STATUS.BANNED) {
+        throw new ApiError(400, "User is banned");
+    }
+
+    if (user.status === STATUS.BLOCK) {
+        throw new ApiError(400, "User is blocked");
+    }
+
+    if (user.status === STATUS.DELETED) {
+        throw new ApiError(400, "User is deleted");
+    }
+
+    if (user.isTwoFactorEnabled) {
+        const otp = user.generateOTP();
+        await user.save();
+        return { enabled2FA: true, }
+    }
+
+
     const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
     const refreshToken = await generateRefreshToken({ _id: user._id, role: user.role });
     user.accessToken = String(accessToken);
@@ -105,7 +154,7 @@ const loginService = async (req: Request) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     }
-    return { userWithoutPassword, accessToken, refreshToken };
+    return { userWithoutPassword, accessToken, refreshToken, enabled2FA: false };
 }
 
 const changePasswordService = async (req: Request) => {
@@ -172,9 +221,7 @@ const resendOTPService = async (req: Request) => {
     if (!user) {
         throw new ApiError(404, "User not found");
     }
-    if (user.isVerified) {
-        throw new ApiError(400, "User already verified");
-    }
+
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const { slug, hash } = createHashPassword(otp);
     const otpData = {

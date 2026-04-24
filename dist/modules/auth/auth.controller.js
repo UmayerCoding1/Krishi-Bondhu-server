@@ -31,7 +31,10 @@ const verifyUser = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User verified successfully", user));
 });
 const login = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const { userWithoutPassword, accessToken, refreshToken } = await auth_service_1.authService.loginService(req);
+    const { userWithoutPassword, accessToken, refreshToken, enabled2FA } = await auth_service_1.authService.loginService(req);
+    if (enabled2FA) {
+        return res.status(200).json(new ApiResponse_1.ApiResponse(200, "Please enter your 2FA code", { enabled2FA }));
+    }
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
     return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged in successfully", userWithoutPassword));

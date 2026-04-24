@@ -44,7 +44,10 @@ const verifyUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {
-    const { userWithoutPassword, accessToken, refreshToken } = await authService.loginService(req);
+    const { userWithoutPassword, accessToken, refreshToken, enabled2FA } = await authService.loginService(req);
+    if (enabled2FA) {
+        return res.status(200).json(new ApiResponse(200, "Please enter your 2FA code", { enabled2FA }));
+    }
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
     return res.status(200).json(new ApiResponse(200, "User logged in successfully", userWithoutPassword));

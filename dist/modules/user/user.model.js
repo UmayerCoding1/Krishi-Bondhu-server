@@ -4,6 +4,7 @@ exports.User = void 0;
 const mongoose_1 = require("mongoose");
 const user_interface_1 = require("./user.interface");
 const crypto_hash_1 = require("../../utils/crypto-hash");
+const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
 const userSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -114,4 +115,28 @@ userSchema.pre("save", async function (next) {
         this.slug = slug;
     }
 });
+userSchema.methods.generateOTP = function () {
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);
+    const otpData = {
+        code: hash,
+        expiresAt: expiresAt,
+        slug: slug
+    };
+    (0, sendEmailQueue_1.sendEmailQueue)({ to: this.email, sub: "Verify your email", otp });
+    this.otp = otpData;
+    return otpData;
+};
+userSchema.methods.verifyOTP = function (otp) {
+    const verifyOTP = (0, crypto_hash_1.verifyHashPassword)(otp, this.otp.slug, this.otp.code);
+    if (verifyOTP) {
+        this.isVerified = true;
+        this.otp = "";
+        this.otpExpires = undefined;
+        this.save();
+        return true;
+    }
+    return false;
+};
 exports.User = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);
