@@ -9,8 +9,7 @@ let cookieOptions;
 process.env.NODE_ENV === 'production' ? cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none' as const,  // cross-domain এর জন্য আবশ্যক
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: 'none' as const,
 } : cookieOptions = {
     httpOnly: true,
     secure: false,
