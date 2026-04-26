@@ -13,6 +13,11 @@ import diseaseDetectionRouter from "./modules/disease/disease.route";
 import userRouter from "./modules/user/user.route";
 import https from 'https';
 
+
+// worker
+import './worker/sendEmailWorker';
+import './worker/saveChatWorker';
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 

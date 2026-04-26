@@ -142,7 +142,7 @@ const toggleTwoFactorService = async (req) => {
     }
     user.isTwoFactorEnabled = !user.isTwoFactorEnabled;
     await user.save();
-    await redis_1.default.set(cacheKey, JSON.stringify(user));
+    await redis_1.default.del(cacheKey);
     return {
         statusCode: 200,
         message: "Two-factor authentication " + (user.isTwoFactorEnabled ? "enabled" : "disabled")
