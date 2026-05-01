@@ -118,7 +118,7 @@ userSchema.pre("save", async function (next) {
     }
 });
 
-userSchema.methods.generateOTP = function () {
+userSchema.methods.generateOTP = async function () {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const { slug, hash } = createHashPassword(otp);
@@ -129,7 +129,7 @@ userSchema.methods.generateOTP = function () {
     }
 
     // sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
-    sendEmail(this.email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
+    await sendEmail(this.email, "Verify your email", otp)
     this.otp = otpData;
     return otpData;
 }

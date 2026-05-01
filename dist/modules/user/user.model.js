@@ -115,7 +115,7 @@ userSchema.pre("save", async function (next) {
         this.slug = slug;
     }
 });
-userSchema.methods.generateOTP = function () {
+userSchema.methods.generateOTP = async function () {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);
@@ -125,7 +125,7 @@ userSchema.methods.generateOTP = function () {
         slug: slug
     };
     // sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
-    (0, sendEmail_1.sendEmail)(this.email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
+    await (0, sendEmail_1.sendEmail)(this.email, "Verify your email", otp);
     this.otp = otpData;
     return otpData;
 };
