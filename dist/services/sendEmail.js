@@ -23,6 +23,7 @@ const transporter = nodemailer_1.default.createTransport({
     }
 });
 const sendEmail = async (to, sub, otp) => {
+    console.log('send email.......');
     await transporter.sendMail({
         from: `"কৃষি বন্ধু " <${process.env.NODEMAILER_USER}>`,
         to,
@@ -73,6 +74,7 @@ const sendEmail = async (to, sub, otp) => {
       </div>
     `,
     });
+    console.log('send email done');
     return { success: true };
 };
 exports.sendEmail = sendEmail;

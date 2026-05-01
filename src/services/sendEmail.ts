@@ -26,6 +26,7 @@ export const sendEmail = async (
   sub: string,
   otp: string
 ) => {
+  console.log('send email.......')
   await transporter.sendMail({
     from: `"কৃষি বন্ধু " <${process.env.NODEMAILER_USER}>`,
     to,
@@ -77,6 +78,6 @@ export const sendEmail = async (
     `,
   });
 
-
+  console.log('send email done')
   return { success: true };
 };
