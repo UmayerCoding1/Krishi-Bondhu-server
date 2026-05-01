@@ -7,6 +7,7 @@ import { ApiResponse } from "../../utils/ApiResponse";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
 import redisClient from "../../config/redis";
 import { STATUS } from "../user/user.interface";
+import { sendEmail } from "../../services/sendEmail";
 
 
 const registerService = async (req: Request) => {
@@ -32,7 +33,8 @@ const registerService = async (req: Request) => {
 
     }
 
-    sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    sendEmail(email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
     const user = await User.create({ name, email, password, otp: otpData });
     return user;
 
@@ -244,7 +246,8 @@ const resendOTPService = async (req: Request) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
         slug: slug
     }
-    sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    sendEmail(email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
 
     await User.updateOne({ _id: user._id }, { $set: { otp: otpData } });
     return { success: true, message: "OTP sent successfully" };

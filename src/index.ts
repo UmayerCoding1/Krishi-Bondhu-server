@@ -15,8 +15,8 @@ import https from 'https';
 
 
 // worker
-import './worker/sendEmailWorker';
-import './worker/saveChatWorker';
+// import './worker/sendEmailWorker';
+// import './worker/saveChatWorker';
 
 const app = express();
 const PORT = process.env.PORT || 8000;

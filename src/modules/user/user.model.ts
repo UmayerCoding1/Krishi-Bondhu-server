@@ -2,6 +2,7 @@ import mongoose, { Schema, model, models } from "mongoose";
 import { IUSer, PLANTYPE, ROLE, STATUS } from "./user.interface";
 import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
+import { sendEmail } from "../../services/sendEmail";
 
 const userSchema = new Schema<IUSer>({
     name: {
@@ -127,7 +128,8 @@ userSchema.methods.generateOTP = function () {
         slug: slug
     }
 
-    sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
+    sendEmail(this.email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
     this.otp = otpData;
     return otpData;
 }

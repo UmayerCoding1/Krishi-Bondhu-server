@@ -4,7 +4,7 @@ exports.User = void 0;
 const mongoose_1 = require("mongoose");
 const user_interface_1 = require("./user.interface");
 const crypto_hash_1 = require("../../utils/crypto-hash");
-const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
+const sendEmail_1 = require("../../services/sendEmail");
 const userSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -124,7 +124,8 @@ userSchema.methods.generateOTP = function () {
         expiresAt: expiresAt,
         slug: slug
     };
-    (0, sendEmailQueue_1.sendEmailQueue)({ to: this.email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
+    (0, sendEmail_1.sendEmail)(this.email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
     this.otp = otpData;
     return otpData;
 };

@@ -17,8 +17,8 @@ const disease_route_1 = __importDefault(require("./modules/disease/disease.route
 const user_route_1 = __importDefault(require("./modules/user/user.route"));
 const https_1 = __importDefault(require("https"));
 // worker
-require("./worker/sendEmailWorker");
-require("./worker/saveChatWorker");
+// import './worker/sendEmailWorker';
+// import './worker/saveChatWorker';
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
 app.use(express_1.default.json());

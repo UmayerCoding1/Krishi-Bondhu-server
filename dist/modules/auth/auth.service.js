@@ -9,9 +9,9 @@ const ApiError_1 = require("../../utils/ApiError");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const token_1 = require("../../utils/token");
 const ApiResponse_1 = require("../../utils/ApiResponse");
-const sendEmailQueue_1 = require("../../queue/sendEmailQueue");
 const redis_1 = __importDefault(require("../../config/redis"));
 const user_interface_1 = require("../user/user.interface");
+const sendEmail_1 = require("../../services/sendEmail");
 const registerService = async (req) => {
     const { name, email, password } = req.body;
     const existingUser = await user_model_1.User.findOne({ email });
@@ -30,7 +30,8 @@ const registerService = async (req) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
         slug: slug
     };
-    (0, sendEmailQueue_1.sendEmailQueue)({ to: email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    (0, sendEmail_1.sendEmail)(email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
     const user = await user_model_1.User.create({ name, email, password, otp: otpData });
     return user;
 };
@@ -194,7 +195,8 @@ const resendOTPService = async (req) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
         slug: slug
     };
-    (0, sendEmailQueue_1.sendEmailQueue)({ to: email, sub: "Verify your email", otp });
+    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
+    (0, sendEmail_1.sendEmail)(email, "Verify your email", otp).catch(err => console.log("Error sending email:", err));
     await user_model_1.User.updateOne({ _id: user._id }, { $set: { otp: otpData } });
     return { success: true, message: "OTP sent successfully" };
 };
