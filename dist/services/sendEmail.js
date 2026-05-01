@@ -13,13 +13,13 @@ if (!process.env.NODEMAILER_USER || !process.env.NODEMAILER_PASS) {
     throw new Error("Email credentials missing in .env");
 }
 const transporter = nodemailer_1.default.createTransport({
-    service: "gmail",
+    secure: true,
+    host: "smtp.gmail.com",
+    port: 465,
+    pool: true,
     auth: {
         user: process.env.NODEMAILER_USER,
-        pass: process.env.NODEMAILER_PASS, // App Password
-    },
-    tls: {
-        rejectUnauthorized: false
+        pass: process.env.NODEMAILER_PASS
     }
 });
 const sendEmail = async (to, sub, otp) => {
