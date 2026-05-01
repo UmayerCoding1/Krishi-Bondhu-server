@@ -1,25 +1,25 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: "../../.env" });
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
 import nodemailer from 'nodemailer';
 
 if (!process.env.NODEMAILER_USER || !process.env.NODEMAILER_PASS) {
   throw new Error("Email credentials missing in .env");
 }
 
-console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
 
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  pool: true,
+  service: "gmail",
   auth: {
-    user: process.env.NODEMAILER_USER!,
-    pass: process.env.NODEMAILER_PASS!
+    user: process.env.NODEMAILER_USER,
+    pass: process.env.NODEMAILER_PASS, // App Password
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
-
 
 export const sendEmail = async (
   to: string,

@@ -6,19 +6,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmail = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: "../../.env" });
+const dns_1 = __importDefault(require("dns"));
+dns_1.default.setDefaultResultOrder("ipv4first");
 const nodemailer_1 = __importDefault(require("nodemailer"));
 if (!process.env.NODEMAILER_USER || !process.env.NODEMAILER_PASS) {
     throw new Error("Email credentials missing in .env");
 }
-console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
 const transporter = nodemailer_1.default.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    pool: true,
+    service: "gmail",
     auth: {
         user: process.env.NODEMAILER_USER,
-        pass: process.env.NODEMAILER_PASS
+        pass: process.env.NODEMAILER_PASS, // App Password
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 const sendEmail = async (to, sub, otp) => {

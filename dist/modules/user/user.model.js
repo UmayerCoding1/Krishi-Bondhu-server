@@ -125,7 +125,7 @@ userSchema.methods.generateOTP = async function () {
         slug: slug
     };
     // sendEmailQueue({ to: this.email, sub: "Verify your email", otp });
-    await (0, sendEmail_1.sendEmail)(this.email, "Verify your email", otp);
+    (0, sendEmail_1.sendEmail)(this.email, "Verify your email", otp);
     this.otp = otpData;
     return otpData;
 };
