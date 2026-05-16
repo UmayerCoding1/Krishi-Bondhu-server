@@ -5,22 +5,27 @@ import { ApiResponse } from "../../utils/ApiResponse";
 
 
 
+
 let cookieOptions;
-process.env.NODE_ENV === 'production' ? cookieOptions = {
+// process.env.NODE_ENV === 'production' ? cookieOptions = {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === 'production',
+//     sameSite: 'none' as const,
+// } : cookieOptions = {
+//     httpOnly: true,
+//     secure: false,
+//     sameSite: 'lax' as const,
+//     // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+// };
+
+// console.log(cookieOptions)
+
+
+cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'none' as const,
-} : cookieOptions = {
-    httpOnly: true,
-    secure: false,
-    sameSite: 'lax' as const,
-    // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
-console.log(cookieOptions)
-
-
-
+}
 
 const register = asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.registerService(req);
