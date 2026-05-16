@@ -23,20 +23,17 @@ const registerService = async (req: Request) => {
         }
 
     }
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const { slug, hash } = createHashPassword(otp);
 
-    const otpData = {
-        code: hash,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        slug: slug
 
-    }
 
-    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
-    await sendEmail(email, "Verify your email", otp)
-    const user = await User.create({ name, email, password, otp: otpData });
-    return user;
+
+
+    const user = await User.create({ name, email, password });
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+
+    console.log(accessToken, refreshToken);
+    return { user, accessToken, refreshToken };
 
 
 };
@@ -58,8 +55,8 @@ const verifyUserService = async (req: Request) => {
             throw new ApiError(400, "OTP expired");
         }
 
-        const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
-        const refreshToken = await generateRefreshToken({ _id: user._id, role: user.role });
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
 
         user.isVerified = true;
         user.otp = "";
@@ -133,11 +130,7 @@ const loginService = async (req: Request) => {
         throw new ApiError(400, "User is deleted");
     }
 
-    if (user.isTwoFactorEnabled) {
-        const otp = user.generateOTP();
-        await user.save();
-        return { enabled2FA: true, }
-    }
+
 
 
     const accessToken = await generateAccessToken({ _id: user._id, role: user.role });
@@ -154,9 +147,8 @@ const loginService = async (req: Request) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     }
-    return { userWithoutPassword, accessToken, refreshToken, enabled2FA: false };
+    return { userWithoutPassword, accessToken, refreshToken };
 }
-
 const changePasswordService = async (req: Request) => {
     const { oldPassword, newPassword } = req.body;
     const user = await User.findById(req._id);

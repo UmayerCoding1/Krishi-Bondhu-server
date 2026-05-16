@@ -18,6 +18,8 @@ const generateRefreshToken = async (payload) => {
 };
 exports.generateRefreshToken = generateRefreshToken;
 const verifyToken = async (token) => {
-    return jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+    const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+    console.log(decoded, "token decoded");
+    return decoded;
 };
 exports.verifyToken = verifyToken;

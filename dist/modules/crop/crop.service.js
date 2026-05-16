@@ -78,7 +78,6 @@ Beshi kotha na.
                     .replace(/```/g, '')
                     .trim();
                 const dataArray = JSON.parse(cleanString);
-                console.log('dataArray', dataArray);
                 if (dataArray.error) {
                     const aiRequest = new aiRequest_model_1.AiRequest({
                         user: req._id,
@@ -127,7 +126,9 @@ Beshi kotha na.
                     }
                 }));
                 const maxRating = Math.max(...cropsWithImages.map((c) => c.Rating));
+                console.log(maxRating);
                 const bestCrop = cropsWithImages.find((c) => c.Rating === maxRating);
+                console.log(bestCrop);
                 const aiRequest = new aiRequest_model_1.AiRequest({
                     user: req._id,
                     user_prompt: prompt,

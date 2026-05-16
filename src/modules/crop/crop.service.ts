@@ -78,7 +78,6 @@ Beshi kotha na.
                     .trim()
 
                 const dataArray = JSON.parse(cleanString);
-                console.log('dataArray', dataArray)
 
                 if (dataArray.error) {
                     const aiRequest = new AiRequest({
@@ -137,8 +136,10 @@ Beshi kotha na.
                     })
                 )
 
-                const maxRating = Math.max(...cropsWithImages.map((c: any) => c.Rating))
+                const maxRating = Math.max(...cropsWithImages.map((c: any) => c.Rating));
+                console.log(maxRating)
                 const bestCrop = cropsWithImages.find((c: any) => c.Rating === maxRating);
+                console.log(bestCrop);
 
                 const aiRequest = new AiRequest({
                     user: req._id,

@@ -2,10 +2,9 @@ export class ApiResponse<T> {
     constructor(
         public statusCode: number,
         public message: string = "Success",
-        public data?: T
+        public data?: T,
+        public success?: boolean,
     ) { }
 
-    get success(): boolean {
-        return this.statusCode < 400;
-    }
+
 }

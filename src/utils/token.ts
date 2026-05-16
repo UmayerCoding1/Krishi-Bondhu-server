@@ -19,5 +19,7 @@ export const generateRefreshToken = async (payload: { _id: string, role: string 
 };
 
 export const verifyToken = async (token: string) => {
-    return jwt.verify(token, process.env.JWT_SECRET!) as IJwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as IJwtPayload;
+    console.log(decoded, "token decoded")
+    return decoded;
 };

@@ -1,10 +1,14 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = require("mongoose");
 const user_interface_1 = require("./user.interface");
 const crypto_hash_1 = require("../../utils/crypto-hash");
 const sendEmail_1 = require("../../services/sendEmail");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -115,6 +119,12 @@ userSchema.pre("save", async function (next) {
         this.slug = slug;
     }
 });
+userSchema.methods.generateAccessToken = async function () {
+    return jsonwebtoken_1.default.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+userSchema.methods.generateRefreshToken = async function () {
+    return jsonwebtoken_1.default.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: "1m" });
+};
 userSchema.methods.generateOTP = async function () {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);

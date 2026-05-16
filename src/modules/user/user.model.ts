@@ -3,6 +3,7 @@ import { IUSer, PLANTYPE, ROLE, STATUS } from "./user.interface";
 import { createHashPassword, verifyHashPassword } from "../../utils/crypto-hash";
 import { sendEmailQueue } from "../../queue/sendEmailQueue";
 import { sendEmail } from "../../services/sendEmail";
+import jwt from "jsonwebtoken";
 
 const userSchema = new Schema<IUSer>({
     name: {
@@ -117,6 +118,13 @@ userSchema.pre("save", async function (next) {
         this.slug = slug;
     }
 });
+
+userSchema.methods.generateAccessToken = async function () {
+    return jwt.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+}
+userSchema.methods.generateRefreshToken = async function () {
+    return jwt.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET!, { expiresIn: "1m" });
+}
 
 userSchema.methods.generateOTP = async function () {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();

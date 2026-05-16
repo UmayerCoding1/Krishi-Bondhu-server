@@ -23,17 +23,11 @@ const registerService = async (req) => {
             return new ApiResponse_1.ApiResponse(400, "User already exists");
         }
     }
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const { slug, hash } = (0, crypto_hash_1.createHashPassword)(otp);
-    const otpData = {
-        code: hash,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        slug: slug
-    };
-    // sendEmailQueue({ to: email, sub: "Verify your email", otp });
-    await (0, sendEmail_1.sendEmail)(email, "Verify your email", otp);
-    const user = await user_model_1.User.create({ name, email, password, otp: otpData });
-    return user;
+    const user = await user_model_1.User.create({ name, email, password });
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+    console.log(accessToken, refreshToken);
+    return { user, accessToken, refreshToken };
 };
 const verifyUserService = async (req) => {
     const { email, otp } = req.body;
@@ -46,8 +40,8 @@ const verifyUserService = async (req) => {
         if (user?.otp?.expiresAt < new Date()) {
             throw new ApiError_1.ApiError(400, "OTP expired");
         }
-        const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
-        const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
         user.isVerified = true;
         user.otp = "";
         user.otpExpires = undefined;
@@ -101,11 +95,6 @@ const loginService = async (req) => {
     if (user.status === user_interface_1.STATUS.DELETED) {
         throw new ApiError_1.ApiError(400, "User is deleted");
     }
-    if (user.isTwoFactorEnabled) {
-        const otp = user.generateOTP();
-        await user.save();
-        return { enabled2FA: true, };
-    }
     const accessToken = await (0, token_1.generateAccessToken)({ _id: user._id, role: user.role });
     const refreshToken = await (0, token_1.generateRefreshToken)({ _id: user._id, role: user.role });
     user.accessToken = String(accessToken);
@@ -119,7 +108,7 @@ const loginService = async (req) => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };
-    return { userWithoutPassword, accessToken, refreshToken, enabled2FA: false };
+    return { userWithoutPassword, accessToken, refreshToken };
 };
 const changePasswordService = async (req) => {
     const { oldPassword, newPassword } = req.body;

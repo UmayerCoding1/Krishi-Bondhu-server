@@ -5,13 +5,12 @@ class ApiResponse {
     statusCode;
     message;
     data;
-    constructor(statusCode, message = "Success", data) {
+    success;
+    constructor(statusCode, message = "Success", data, success) {
         this.statusCode = statusCode;
         this.message = message;
         this.data = data;
-    }
-    get success() {
-        return this.statusCode < 400;
+        this.success = success;
     }
 }
 exports.ApiResponse = ApiResponse;

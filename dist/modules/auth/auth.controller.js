@@ -18,6 +18,7 @@ process.env.NODE_ENV === 'production' ? cookieOptions = {
 console.log(cookieOptions);
 const register = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.registerService(req);
+    console.log(result);
     if (result) {
         return res.status(201).json(new ApiResponse_1.ApiResponse(201, "User registered successfully"));
     }
@@ -30,13 +31,10 @@ const verifyUser = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User verified successfully", user));
 });
 const login = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const { userWithoutPassword, accessToken, refreshToken, enabled2FA } = await auth_service_1.authService.loginService(req);
-    if (enabled2FA) {
-        return res.status(200).json(new ApiResponse_1.ApiResponse(200, "Please enter your 2FA code", { enabled2FA }));
-    }
+    const { userWithoutPassword, accessToken, refreshToken } = await auth_service_1.authService.loginService(req);
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
-    return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged in successfully", userWithoutPassword));
+    return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged in successfully", userWithoutPassword, true));
 });
 const changePassword = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.changePasswordService(req);
@@ -44,11 +42,11 @@ const changePassword = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
         res.clearCookie('accessToken', cookieOptions);
         res.clearCookie('refreshToken', cookieOptions);
     }
-    return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message));
+    return res.status(result.success ? 200 : 400).json(new ApiResponse_1.ApiResponse(result.success ? 200 : 400, result.message, undefined, result.success));
 });
 const toggleTwoFactor = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.toggleTwoFactorService(req);
-    return res.status(result.statusCode).json(new ApiResponse_1.ApiResponse(result.statusCode, result.message));
+    return res.status(result.statusCode).json(new ApiResponse_1.ApiResponse(result.statusCode, result.message, undefined, true));
 });
 const resendOTP = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.resendOTPService(req);
@@ -58,7 +56,7 @@ const logout = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const result = await auth_service_1.authService.logoutService(req);
     res.clearCookie('accessToken', cookieOptions);
     res.clearCookie('refreshToken', cookieOptions);
-    return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged out successfully"));
+    return res.status(200).json(new ApiResponse_1.ApiResponse(200, "User logged out successfully", undefined, true));
 });
 const getCurrentUser = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const user = await auth_service_1.authService.getCurrentUserService(req);
